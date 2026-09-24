@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NeilUsha · Lobby</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="lobby">
+<header class="nav">
+  <a class="brand" href="dashboard.html"><span class="logo">N</span>NeilUsha</a>
+  <div class="navr"><button class="btn line" data-open-settings>⚙️ <span data-i18n="settings"></span></button></div>
+</header>
+<main class="lobby">
+  <div class="pv">
+    <video id="lv" autoplay playsinline muted></video>
+    <div class="lav" id="lav" hidden></div>
+    <div class="ctl">
+      <button class="cb" id="lmic" title="Mic">🎤</button>
+      <button class="cb" id="lcam" title="Camera">📹</button>
+    </div>
+  </div>
+  <section class="card">
+    <h2 data-i18n="ready"></h2>
+    <p class="note">🔗 <span id="lcode"></span></p>
+    <label><span data-i18n="name"></span><input id="lname" maxlength="24"></label>
+    <button class="btn" id="ljoin" data-i18n="joinnow"></button>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
