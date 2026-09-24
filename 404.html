@@ -1,25 +1,344 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NeilUsha · 404</title>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>NeilUsha · 404</title>
+  <meta
+    name="description"
+    content="The page you're looking for could not be found on NeilUsha."
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* ================================
+       NeilUsha Premium 404
+       ================================ */
+
+    body[data-page="notfound"] {
+      min-height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      font-family: "Hind Siliguri", sans-serif;
+      background:
+        radial-gradient(
+          circle at 50% 35%,
+          rgba(34, 197, 94, 0.12),
+          transparent 34%
+        ),
+        #07100b;
+      color: #f4fff7;
+    }
+
+    body[data-page="notfound"]::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(
+          120deg,
+          transparent 0%,
+          rgba(34, 197, 94, 0.025) 50%,
+          transparent 100%
+        );
+    }
+
+    .nav {
+      position: relative;
+      z-index: 10;
+    }
+
+    .brand {
+      text-decoration: none;
+    }
+
+    .notfound-page {
+      min-height: calc(100vh - 72px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px 70px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .notfound-card {
+      width: min(680px, 100%);
+      text-align: center;
+      position: relative;
+      padding: 54px 30px;
+      border: 1px solid rgba(74, 222, 128, 0.14);
+      border-radius: 28px;
+      background: rgba(9, 22, 14, 0.68);
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .notfound-glow {
+      width: 150px;
+      height: 150px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(34, 197, 94, 0.12);
+      filter: blur(55px);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .notfound-code {
+      position: relative;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      font-size: clamp(90px, 18vw, 170px);
+      line-height: 0.9;
+      font-weight: 800;
+      letter-spacing: -0.08em;
+      color: #4ade80;
+      text-shadow:
+        0 0 30px rgba(74, 222, 128, 0.16);
+    }
+
+    .notfound-line {
+      width: 54px;
+      height: 4px;
+      margin: 28px auto 22px;
+      border-radius: 20px;
+      background: #4ade80;
+      box-shadow: 0 0 18px rgba(74, 222, 128, 0.35);
+    }
+
+    .notfound-title {
+      position: relative;
+      margin: 0;
+      font-size: clamp(25px, 5vw, 38px);
+      line-height: 1.25;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .notfound-description {
+      position: relative;
+      max-width: 500px;
+      margin: 14px auto 0;
+      font-size: 16px;
+      line-height: 1.8;
+      color: rgba(226, 245, 232, 0.68);
+    }
+
+    .notfound-actions {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .notfound-actions .btn {
+      min-width: 150px;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .notfound-home {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.78);
+      text-decoration: none;
+      transition: 0.2s ease;
+    }
+
+    .notfound-home:hover {
+      border-color: rgba(74, 222, 128, 0.3);
+      color: #ffffff;
+      background: rgba(74, 222, 128, 0.06);
+      transform: translateY(-1px);
+    }
+
+    .notfound-brand {
+      position: relative;
+      margin-top: 34px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .notfound-brand strong {
+      color: rgba(74, 222, 128, 0.75);
+      font-weight: 600;
+    }
+
+    .floating-dot {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      opacity: 0.25;
+      pointer-events: none;
+      animation: floatDot 7s ease-in-out infinite;
+    }
+
+    .dot-one {
+      left: 12%;
+      top: 24%;
+    }
+
+    .dot-two {
+      right: 14%;
+      top: 34%;
+      width: 4px;
+      height: 4px;
+      animation-delay: 1.5s;
+    }
+
+    .dot-three {
+      left: 23%;
+      bottom: 18%;
+      width: 4px;
+      height: 4px;
+      animation-delay: 3s;
+    }
+
+    @keyframes floatDot {
+      0%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.18;
+      }
+
+      50% {
+        transform: translateY(-18px);
+        opacity: 0.45;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .notfound-page {
+        padding: 25px 16px 45px;
+      }
+
+      .notfound-card {
+        padding: 45px 20px;
+        border-radius: 22px;
+      }
+
+      .notfound-description {
+        font-size: 15px;
+      }
+
+      .notfound-actions {
+        flex-direction: column;
+      }
+
+      .notfound-actions .btn,
+      .notfound-home {
+        width: min(260px, 100%);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .floating-dot {
+        animation: none;
+      }
+
+      .notfound-home {
+        transition: none;
+      }
+    }
+  </style>
 </head>
+
 <body data-page="notfound">
-<header class="nav">
-  <a class="brand" href="index.html"><span class="logo">N</span>NeilUsha</a>
-  <div class="navr"><select data-lang-select aria-label="Language"></select></div>
-</header>
-<main class="center">
-  <div class="nf">
-    <h1>404</h1>
-    <h2 data-i18n="notfound"></h2>
-    <p data-i18n="notfoundsub"></p>
-    <a class="btn" href="dashboard.html" data-i18n="back"></a>
-  </div>
-</main>
-<script src="app.js"></script>
+
+  <header class="nav">
+    <a class="brand" href="index.html" aria-label="NeilUsha Home">
+      <span class="logo">N</span>
+      <span>NeilUsha</span>
+    </a>
+
+    <div class="navr">
+      <select data-lang-select aria-label="Language"></select>
+    </div>
+  </header>
+
+  <!-- Decorative elements -->
+  <span class="floating-dot dot-one"></span>
+  <span class="floating-dot dot-two"></span>
+  <span class="floating-dot dot-three"></span>
+
+  <main class="notfound-page">
+
+    <section class="notfound-card" aria-labelledby="notfound-title">
+
+      <div class="notfound-glow"></div>
+
+      <h1 class="notfound-code">404</h1>
+
+      <div class="notfound-line"></div>
+
+      <h2
+        id="notfound-title"
+        class="notfound-title"
+        data-i18n="notfound"
+      >
+        Page not found
+      </h2>
+
+      <p
+        class="notfound-description"
+        data-i18n="notfoundsub"
+      >
+        The page you're looking for doesn't exist or may have been moved.
+      </p>
+
+      <div class="notfound-actions">
+
+        <a
+          class="btn"
+          href="dashboard.html"
+          data-i18n="back"
+        >
+          Back to Dashboard
+        </a>
+
+        <a
+          class="notfound-home"
+          href="index.html"
+        >
+          ← Home
+        </a>
+
+      </div>
+
+      <div class="notfound-brand">
+        <strong>NeilUsha</strong> · Connect beyond language
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+
 </body>
 </html>
