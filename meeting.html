@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NeilUsha · Meeting</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="meeting">
+<div class="room">
+  <header class="mbar">
+    <a class="brand" href="dashboard.html"><span class="logo">N</span>NeilUsha</a>
+    <button class="chip" id="copy">🔗 <span id="roomCode"></span></button>
+    <span class="chip">🌍 <span data-i18n="hear"></span>: <b id="hearLang"></b></span>
+    <span class="chip" id="timer">00:00</span>
+  </header>
+
+  <main class="stage" id="stage">
+    <section id="share" hidden>
+      <div class="wb">🖥️ Q3 Plan.pptx</div>
+      <div class="body"><h2>Q3 Plan</h2><div class="ln" style="width:80%"></div><div class="ln" style="width:60%"></div><div class="ln" style="width:70%"></div></div>
+    </section>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <div class="caption" id="caption" hidden></div>
+
+  <aside class="panel" id="panel" hidden>
+    <nav class="tabs">
+      <button data-tab="chat" data-i18n="chat"></button>
+      <button data-tab="people" data-i18n="people"></button>
+      <button data-tab="scenes" data-i18n="scenes"></button>
+    </nav>
+    <div class="pbody" id="tab-chat" data-body="chat">
+      <div id="msgs"></div>
+      <form id="chatForm"><input id="chatIn" data-ph="msg" autocomplete="off"><button class="btn" data-i18n="send"></button></form>
+    </div>
+    <div class="pbody plist" id="tab-people" data-body="people" hidden></div>
+    <div class="pbody" data-body="scenes" hidden>
+      <div class="scenes" id="scenes"></div>
+      <label class="up"><span data-i18n="upload"></span><input type="file" id="bgFile" accept="image/*" hidden></label>
+    </div>
+  </aside>
+
+  <footer>
+    <div class="demo-note" data-i18n="demo"></div>
+    <div class="controls">
+      <button class="cb" id="mic" title="Mic">🎤</button>
+      <button class="cb" id="cam" title="Camera">📹</button>
+      <button class="cb" id="shareBtn" title="Share screen">🖥️</button>
+      <button class="cb on" id="ccBtn" title="Captions">💬</button>
+      <button class="cb" data-open="scenes" title="Backgrounds">🎨</button>
+      <button class="cb" data-open="chat" title="Chat">✉️<i id="badge" hidden>0</i></button>
+      <button class="cb" data-open="people" title="People">👥</button>
+      <button class="cb" data-open-settings title="Settings">⚙️</button>
+      <button class="cb leave" id="leave" title="Leave">🔴</button>
+    </div>
+  </footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
