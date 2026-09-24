@@ -3,305 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>neilusha</title>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#eaf3fb;--ink:#10233f;--card:#fff;--blue:#1f5fd6;--red:#d64545;--soft:#d5e4f5}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{font-family:'Hind Siliguri',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
-h1{font-size:2.6rem;margin:0 0 4px;letter-spacing:-1px}
-label{display:block;font-size:.9rem;margin:12px 0 4px;font-weight:500}
-input,select{width:100%;padding:11px 12px;border:1.5px solid var(--soft);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
-input:focus,select:focus,button:focus-visible{outline:3px solid var(--blue);outline-offset:1px}
-button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 16px;background:var(--blue);color:#fff;font-weight:500}
-button.ghost{background:var(--soft);color:var(--ink)}
-button.off{background:var(--red);color:#fff}
-#lobby{max-width:440px;margin:0 auto;padding:8vh 20px}
-#lobby p{margin:0 0 8px}
-#lobby .card{background:var(--card);padding:22px;border-radius:16px;margin-top:18px}
-#lobby .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-#go{width:100%;margin-top:20px;padding:13px;font-size:1.05rem}
-#call{display:none;height:100%;flex-direction:column}
-#stage{flex:1;position:relative;background:#0a1830;min-height:0;overflow:auto}
-#grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;padding:8px;align-content:center;min-height:100%}
-.tile{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3}
-.tile video,.tile canvas{width:100%;height:100%;object-fit:cover;display:block}
-#me{transform:scaleX(-1)}
-.tag{position:absolute;left:8px;bottom:8px;background:#000000b3;color:#fff;padding:3px 10px;border-radius:8px;font-size:.85rem}
-#status{position:fixed;left:14px;top:14px;background:#ffffffd9;padding:6px 12px;border-radius:20px;font-size:.9rem;z-index:2}
-#cap{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);width:min(760px,92%);text-align:center;pointer-events:none;z-index:2}
-#cap div{display:inline-block;background:#000000b3;color:#fff;padding:6px 12px;border-radius:10px;margin:2px;font-size:1.05rem}
-#cap .mine{background:#1f5fd6b3;font-size:.9rem}
-#bar{background:var(--card);padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
-#bar select{width:auto;padding:8px}
-.bgs{display:flex;gap:6px;flex-wrap:wrap}
-.bgs button{padding:7px 11px;font-size:.85rem}
-.bgs button.on{background:var(--blue);color:#fff}
-#cam{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-</style>
+<title>NeilUsha</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-page="landing">
+<header class="nav">
+  <a class="brand" href="index.html"><span class="logo">N</span>NeilUsha</a>
+  <div class="navr">
+    <select data-lang-select aria-label="Language"></select>
+    <a class="btn" href="dashboard.html" data-i18n="dash"></a>
+  </div>
+</header>
 
-<section id="lobby">
-  <h1>neilusha</h1>
-  <p>Nijer bhashay kotha bolun, prottekey shunbe tar nijer bhashay.</p>
-  <div class="card">
-    <label for="name">Apnar naam</label>
-    <input id="name" placeholder="Naam">
-    <label for="room">Room code (sobai same code dile ek call-e ashben)</label>
-    <input id="room" placeholder="jemon: rasel123">
-    <div class="row">
-      <div><label for="speak">Ami boli</label><select id="speak"></select></div>
-      <div><label for="listen">Ami shuni</label><select id="listen"></select></div>
-    </div>
-    <button id="go">Call shuru korun</button>
+<section class="hero">
+  <div>
+    <h1 data-i18n="tagline"></h1>
+    <p data-i18n="sub"></p>
+    <a class="btn big" href="dashboard.html" data-i18n="start"></a>
+  </div>
+  <div class="demo" aria-hidden="true">
+    <div class="row"><small>Ayesha · বাংলা</small><div class="o">সবাইকে শুভ সকাল, শুরু করা যাক।</div><div class="t">🌍 Good morning everyone, let's begin.</div></div>
+    <div class="row"><small>Kenji · 日本語</small><div class="o">資料をご確認ください。</div><div class="t">🌍 Please check the document.</div></div>
+    <div class="row"><small>Sofia · Español</small><div class="o">Me parece una gran idea.</div><div class="t">🌍 I think it's a great idea.</div></div>
   </div>
 </section>
 
-<section id="call">
-  <div id="stage">
-    <div id="grid">
-      <div class="tile"><canvas id="me" width="640" height="480"></canvas><span class="tag">Ami</span></div>
-    </div>
-  </div>
-  <div id="status">...</div>
-  <div id="cap"></div>
-  <div id="bar">
-    <button id="mic" class="ghost">Mic</button>
-    <button id="camBtn" class="ghost">Camera</button>
-    <div class="bgs" id="bgs"></div>
-    <select id="speak2" title="Ami boli"></select>
-    <select id="listen2" title="Ami shuni"></select>
-    <button id="leave" class="off">Leave</button>
-  </div>
-  <video id="cam" autoplay playsinline muted></video>
-  <input type="file" id="file" accept="image/*" hidden>
+<section class="feats">
+  <div><span>🌍</span><b data-i18n="f1"></b></div>
+  <div><span>🎨</span><b data-i18n="f2"></b></div>
+  <div><span>🖥️</span><b data-i18n="f3"></b></div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js"></script>
-<script>
-const MAX=6; // max people in one room
-const LANGS=[['bn-BD','বাংলা'],['en-US','English'],['hi-IN','हिन्दी'],['ur-PK','اردو'],['ar-SA','العربية'],['es-ES','Español'],['fr-FR','Français'],['de-DE','Deutsch'],['pt-BR','Português'],['ru-RU','Русский'],['tr-TR','Türkçe'],['id-ID','Indonesia'],['ja-JP','日本語'],['ko-KR','한국어'],['zh-CN','中文']];
-const $=id=>document.getElementById(id);
-const base=l=>(l||'').split('-')[0];
-const code=l=>l.startsWith('zh')?'zh-CN':base(l);
-
-['speak','listen','speak2','listen2'].forEach(id=>{
-  $(id).innerHTML=LANGS.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');
-});
-$('speak').value='bn-BD'; $('listen').value='en-US';
-
-let S={name:'',room:'',speak:'bn-BD',listen:'en-US',bg:'none',bgImg:null,camOff:false,micOn:true,running:false};
-let media,outStream,seg,peer,rec,slot=0;
-const P={}; // remote people: id -> {conn,name,lang,tile,video,tag}
-const cam=$('cam'), canvas=$('me'), ctx=canvas.getContext('2d');
-
-/* ---------- Background choices ---------- */
-const BGS=[['none','None'],['blur','Blur'],['blue','Blue'],['sunset','Sunset'],['forest','Forest'],['image','My image']];
-$('bgs').innerHTML=BGS.map(([k,n])=>`<button class="ghost ${k==='none'?'on':''}" data-k="${k}">${n}</button>`).join('');
-$('bgs').onclick=e=>{
-  const k=e.target.dataset.k; if(!k) return;
-  if(k==='image'){$('file').click();return;}
-  setBg(k);
-};
-$('file').onchange=e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const img=new Image(); img.onload=()=>{S.bgImg=img;setBg('image')}; img.src=URL.createObjectURL(f);
-};
-function setBg(k){
-  S.bg=k;
-  document.querySelectorAll('#bgs button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
-}
-function paintBg(image){
-  const w=canvas.width,h=canvas.height;
-  if(S.bg==='blur'){ctx.filter='blur(14px)';ctx.drawImage(image,0,0,w,h);ctx.filter='none';return;}
-  if(S.bg==='image'&&S.bgImg){ctx.drawImage(S.bgImg,0,0,w,h);return;}
-  const g=ctx.createLinearGradient(0,0,w,h);
-  if(S.bg==='blue'){g.addColorStop(0,'#1f5fd6');g.addColorStop(1,'#7fd1ff');}
-  else if(S.bg==='sunset'){g.addColorStop(0,'#ff8a5b');g.addColorStop(1,'#7a3e9d');}
-  else {g.addColorStop(0,'#1e6b4a');g.addColorStop(1,'#a4d65e');}
-  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-}
-function onSeg(r){
-  const w=canvas.width,h=canvas.height;
-  ctx.save();
-  ctx.clearRect(0,0,w,h);
-  ctx.drawImage(r.segmentationMask,0,0,w,h);
-  ctx.globalCompositeOperation='source-in';
-  ctx.drawImage(r.image,0,0,w,h);
-  ctx.globalCompositeOperation='destination-over';
-  paintBg(r.image);
-  ctx.restore();
-}
-async function loop(){
-  if(!S.running) return;
-  try{
-    if(S.camOff){
-      ctx.fillStyle='#10233f';ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.save();ctx.scale(1,1);
-      ctx.fillStyle='#fff';ctx.font='64px sans-serif';ctx.textAlign='center';
-      ctx.fillText((S.name[0]||'?').toUpperCase(),canvas.width/2,canvas.height/2+22);
-      ctx.restore();
-    } else if(S.bg==='none'){
-      ctx.drawImage(cam,0,0,canvas.width,canvas.height);
-    } else if(cam.readyState>=2){
-      await seg.send({image:cam});
-    }
-  }catch(e){}
-  requestAnimationFrame(loop);
-}
-
-/* ---------- Start ---------- */
-$('go').onclick=async()=>{
-  S.name=$('name').value.trim()||'Guest';
-  S.room=$('room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-  S.speak=$('speak').value; S.listen=$('listen').value;
-  if(!S.room){alert('Room code din');return;}
-  try{
-    media=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480},audio:{echoCancellation:true,noiseSuppression:true}});
-  }catch(e){alert('Camera/mic allow korun');return;}
-  $('lobby').style.display='none'; $('call').style.display='flex';
-  $('speak2').value=S.speak; $('listen2').value=S.listen;
-  cam.srcObject=media; await cam.play();
-  seg=new SelfieSegmentation({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${f}`});
-  seg.setOptions({modelSelection:1}); seg.onResults(onSeg);
-  S.running=true; loop();
-  outStream=canvas.captureStream(30);
-  media.getAudioTracks().forEach(t=>outStream.addTrack(t));
-  claimSlot(); startRec();
-};
-
-/* ---------- Group connection (no server needed) ----------
-   Every person takes a free seat: room-1, room-2 ... room-6.
-   A new person connects to every other seat; occupied seats answer. */
-const pid=n=>`neilusha-${S.room}-${n}`;
-function count(){return Object.keys(P).length+1;}
-function status(t){$('status').textContent=t;}
-function claimSlot(){
-  slot++;
-  if(slot>MAX){status('Room full (max '+MAX+' jon)');return;}
-  const p=new Peer(pid(slot));
-  p.on('open',()=>{
-    peer=p; status('Room '+S.room+' - '+count()+' jon');
-    for(let i=1;i<=MAX;i++) if(i!==slot) connectTo(pid(i));
-  });
-  p.on('call',c=>{c.answer(outStream);attachCall(c);});
-  p.on('connection',attachConn);
-  p.on('error',e=>{
-    if(e.type==='unavailable-id'){p.destroy();claimSlot();}
-    else if(e.type!=='peer-unavailable') status('Error: '+e.type);
-  });
-}
-function connectTo(id){
-  attachCall(peer.call(id,outStream));
-  attachConn(peer.connect(id));
-}
-function person(id){
-  if(P[id]) return P[id];
-  const t=document.createElement('div'); t.className='tile';
-  const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.muted=true;
-  const tag=document.createElement('span'); tag.className='tag'; tag.textContent='...';
-  t.append(v,tag); $('grid').appendChild(t);
-  P[id]={conn:null,name:'Friend',lang:null,tile:t,video:v,tag};
-  status('Room '+S.room+' - '+count()+' jon');
-  return P[id];
-}
-function drop(id){
-  if(!P[id]) return;
-  P[id].tile.remove(); delete P[id];
-  status('Room '+S.room+' - '+count()+' jon');
-}
-function attachCall(c){
-  const id=c.peer;
-  c.on('stream',s=>{const p=person(id);p.video.srcObject=s;p.video.play().catch(()=>{});updateAudio(id);});
-  c.on('close',()=>drop(id));
-  c.on('error',()=>{});
-}
-function attachConn(d){
-  const id=d.peer;
-  const hello=()=>{person(id).conn=d;d.send({type:'hello',name:S.name,lang:S.speak});};
-  d.open?hello():d.on('open',hello);
-  d.on('data',m=>onData(id,m));
-  d.on('close',()=>drop(id));
-  d.on('error',()=>{});
-}
-function broadcast(m){Object.values(P).forEach(p=>{if(p.conn&&p.conn.open)p.conn.send(m);});}
-function updateAudio(id){
-  const p=P[id]; if(!p) return;
-  // same language: play original voice; different: mute, we speak the translation
-  p.video.muted=!(p.lang&&base(p.lang)===base(S.listen));
-}
-
-/* ---------- Speech -> translate -> voice ---------- */
-async function onData(id,m){
-  const p=person(id);
-  if(m.type==='hello'){p.name=m.name;p.lang=m.lang;p.tag.textContent=m.name;updateAudio(id);return;}
-  if(m.type!=='speech') return;
-  let text=m.text;
-  if(base(m.lang)!==base(S.listen)){
-    try{
-      const u=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(m.text)}&langpair=${code(m.lang)}|${code(S.listen)}`;
-      const j=await (await fetch(u)).json();
-      text=j.responseData.translatedText||m.text;
-    }catch(e){text=m.text;}
-    const ut=new SpeechSynthesisUtterance(text);
-    ut.lang=S.listen; speechSynthesis.speak(ut);
-  }
-  caption(p.name+': '+text,false);
-}
-function caption(t,mine){
-  const d=document.createElement('div');
-  if(mine)d.className='mine';
-  d.textContent=t; $('cap').appendChild(d);
-  setTimeout(()=>d.remove(),6000);
-  while($('cap').children.length>4)$('cap').firstChild.remove();
-}
-function startRec(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){status('Chrome/Edge use korun (speech support nei)');return;}
-  rec=new SR(); rec.lang=S.speak; rec.continuous=true; rec.interimResults=false;
-  rec.onresult=e=>{
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(!e.results[i].isFinal) continue;
-      const text=e.results[i][0].transcript.trim();
-      if(!text) continue;
-      caption('Ami: '+text,true);
-      broadcast({type:'speech',text,lang:S.speak});
-    }
-  };
-  rec.onend=()=>{if(S.running&&S.micOn)setTimeout(()=>{try{rec.lang=S.speak;rec.start()}catch(e){}},300);};
-  rec.onerror=()=>{};
-  try{rec.start();}catch(e){}
-}
-
-/* ---------- Controls ---------- */
-$('mic').onclick=()=>{
-  S.micOn=!S.micOn;
-  media.getAudioTracks().forEach(t=>t.enabled=S.micOn);
-  $('mic').classList.toggle('off',!S.micOn); $('mic').classList.toggle('ghost',S.micOn);
-  $('mic').textContent=S.micOn?'Mic':'Mic off';
-  if(S.micOn)startRec(); else try{rec.stop()}catch(e){}
-};
-$('camBtn').onclick=()=>{
-  S.camOff=!S.camOff;
-  $('camBtn').classList.toggle('off',S.camOff); $('camBtn').classList.toggle('ghost',!S.camOff);
-  $('camBtn').textContent=S.camOff?'Camera off':'Camera';
-};
-$('speak2').onchange=e=>{
-  S.speak=e.target.value;
-  broadcast({type:'hello',name:S.name,lang:S.speak});
-  try{rec.stop()}catch(e){} // restarts with new language
-};
-$('listen2').onchange=e=>{S.listen=e.target.value;Object.keys(P).forEach(updateAudio);};
-$('leave').onclick=()=>{
-  S.running=false;
-  try{rec.stop()}catch(e){}
-  try{peer.destroy()}catch(e){}
-  media.getTracks().forEach(t=>t.stop());
-  speechSynthesis.cancel(); location.reload();
-};
-</script>
+<script src="app.js"></script>
 </body>
 </html>
