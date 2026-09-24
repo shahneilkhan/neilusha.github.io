@@ -114,3 +114,29 @@ dialog{border:0;border-radius:18px;padding:0;width:min(400px,92vw);box-shadow:0 
  .avatar{font-size:1.3rem}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* V2.1: login, lobby, hand + reactions, 404, dark theme */
+.center{min-height:calc(100vh - 70px);display:grid;place-items:center;padding:24px}
+.box{width:min(420px,100%)}
+.box label{display:block;margin:0 0 10px;font-weight:500}
+.box label input{margin-top:4px}
+.note{font-size:.85rem;opacity:.7;margin:10px 0 0}
+.linkbtn{background:none;border:0;color:var(--emerald);font-weight:600;cursor:pointer;margin-top:12px;width:100%}
+.nf{text-align:center}
+.nf h1{font-size:4rem;margin:0;color:var(--forest)}
+.lobby{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;max-width:940px;margin:0 auto;padding:5vh 5vw;align-items:center}
+.pv{position:relative;aspect-ratio:4/3;background:var(--forest);border-radius:18px;overflow:hidden}
+.pv video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.pv .lav{position:absolute;inset:0;display:grid;place-items:center;font-size:4rem;color:#fff;font-weight:700}
+.pv .ctl{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:10px}
+.hand{position:absolute;top:8px;right:8px;background:var(--gold);border-radius:10px;padding:2px 8px;font-size:1.1rem}
+.reacts{display:flex;gap:6px;justify-content:center;padding-bottom:6px}
+.reacts button{background:#ffffff22;border:0;border-radius:50%;width:42px;height:42px;font-size:1.3rem;cursor:pointer}
+.flyzone{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.fly{position:absolute;bottom:90px;font-size:2.2rem;animation:rise 2.2s ease-out forwards}
+@keyframes rise{to{transform:translateY(-55vh);opacity:0}}
+body[data-page]:not([data-page=meeting]){transition:background .2s}
+html[data-theme=dark] body:not([data-page=meeting]){--paper:#0e1a15;--ink:#e6f2ec;--mint:#12251d;--line:#24443a;--forest:#12805c}
+html[data-theme=dark] body:not([data-page=meeting]) :is(.card,input,select,dialog){background:#13261e;color:var(--ink)}
+html[data-theme=dark] body:not([data-page=meeting]) .btn.line{color:var(--ink);border-color:var(--ink)}
+@media(max-width:720px){.lobby{grid-template-columns:1fr}}
