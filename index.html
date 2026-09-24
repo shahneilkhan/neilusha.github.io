@@ -1,1093 +1,275 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>NeilUsha — Speak Your Language. Connect With Everyone.</title>
-
-<meta name="description"
-      content="NeilUsha is a modern multilingual video meeting platform with real-time voice translation, smart backgrounds and collaboration.">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>neilusha</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{
-    --green:#16a34a;
-    --green-dark:#087f3d;
-    --green-light:#dcfce7;
-    --bg:#f7faf8;
-    --card:#ffffff;
-    --text:#102018;
-    --muted:#64736a;
-    --border:#e3ebe6;
-    --shadow:0 20px 60px rgba(15,70,35,.12);
-}
-
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
-
-html{
-    scroll-behavior:smooth;
-}
-
-body{
-    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    line-height:1.6;
-}
-
-/* NAVBAR */
-
-.navbar{
-    width:100%;
-    position:fixed;
-    top:0;
-    z-index:1000;
-    background:rgba(255,255,255,.82);
-    backdrop-filter:blur(18px);
-    border-bottom:1px solid rgba(220,230,224,.7);
-}
-
-.nav-inner{
-    max-width:1180px;
-    margin:auto;
-    height:74px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 22px;
-}
-
-.logo{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-size:22px;
-    font-weight:800;
-    letter-spacing:-.5px;
-}
-
-.logo-icon{
-    width:38px;
-    height:38px;
-    border-radius:12px;
-    background:linear-gradient(135deg,var(--green),var(--green-dark));
-    display:grid;
-    place-items:center;
-    color:white;
-    font-weight:900;
-    box-shadow:0 8px 20px rgba(22,163,74,.25);
-}
-
-.nav-links{
-    display:flex;
-    gap:30px;
-    list-style:none;
-}
-
-.nav-links a{
-    color:#415048;
-    text-decoration:none;
-    font-size:14px;
-    font-weight:600;
-}
-
-.nav-links a:hover{
-    color:var(--green);
-}
-
-.nav-actions{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.btn{
-    border:0;
-    cursor:pointer;
-    text-decoration:none;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:12px 20px;
-    border-radius:12px;
-    font-weight:700;
-    font-size:14px;
-    transition:.25s ease;
-}
-
-.btn-outline{
-    border:1px solid var(--border);
-    background:white;
-    color:var(--text);
-}
-
-.btn-green{
-    background:var(--green);
-    color:white;
-    box-shadow:0 10px 25px rgba(22,163,74,.22);
-}
-
-.btn-green:hover{
-    transform:translateY(-2px);
-    background:var(--green-dark);
-}
-
-/* HERO */
-
-.hero{
-    min-height:100vh;
-    padding:150px 22px 80px;
-    position:relative;
-    overflow:hidden;
-}
-
-.hero::before{
-    content:"";
-    position:absolute;
-    width:600px;
-    height:600px;
-    background:rgba(34,197,94,.12);
-    border-radius:50%;
-    filter:blur(90px);
-    top:-200px;
-    right:-180px;
-}
-
-.hero-inner{
-    max-width:1180px;
-    margin:auto;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    align-items:center;
-    gap:70px;
-    position:relative;
-    z-index:1;
-}
-
-.badge{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:7px 12px;
-    background:var(--green-light);
-    color:var(--green-dark);
-    border-radius:999px;
-    font-size:12px;
-    font-weight:800;
-    margin-bottom:20px;
-}
-
-.badge-dot{
-    width:7px;
-    height:7px;
-    background:var(--green);
-    border-radius:50%;
-}
-
-.hero h1{
-    font-size:clamp(48px,6vw,78px);
-    line-height:1.02;
-    letter-spacing:-4px;
-    max-width:650px;
-    margin-bottom:24px;
-}
-
-.hero h1 span{
-    color:var(--green);
-}
-
-.hero p{
-    font-size:18px;
-    color:var(--muted);
-    max-width:590px;
-    margin-bottom:32px;
-}
-
-.hero-buttons{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-}
-
-/* MEETING PREVIEW */
-
-.meeting-card{
-    background:#102018;
-    border-radius:26px;
-    padding:14px;
-    box-shadow:var(--shadow);
-    transform:rotate(1deg);
-}
-
-.meeting-window{
-    background:#17231d;
-    border-radius:18px;
-    overflow:hidden;
-}
-
-.meeting-top{
-    height:52px;
-    padding:0 16px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    color:#dce8df;
-    font-size:12px;
-}
-
-.live{
-    display:flex;
-    align-items:center;
-    gap:7px;
-}
-
-.live i{
-    width:7px;
-    height:7px;
-    background:#22c55e;
-    border-radius:50%;
-}
-
-.video-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    padding:8px;
-}
-
-.video{
-    min-height:170px;
-    border-radius:14px;
-    position:relative;
-    overflow:hidden;
-    display:flex;
-    align-items:flex-end;
-    padding:14px;
-}
-
-.video.one{
-    background:linear-gradient(145deg,#315e45,#152d20);
-}
-
-.video.two{
-    background:linear-gradient(145deg,#254f42,#172f29);
-}
-
-.video.three{
-    background:linear-gradient(145deg,#3b6046,#1d3225);
-}
-
-.video.four{
-    background:linear-gradient(145deg,#285746,#132820);
-}
-
-.video-name{
-    color:white;
-    background:rgba(0,0,0,.35);
-    padding:5px 9px;
-    border-radius:8px;
-    font-size:11px;
-}
-
-.controls{
-    height:64px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
-}
-
-.control{
-    width:40px;
-    height:40px;
-    border-radius:50%;
-    background:#27352d;
-    display:grid;
-    place-items:center;
-    color:white;
-}
-
-.control.end{
-    background:#ef4444;
-}
-
-/* FEATURES */
-
-.section{
-    padding:100px 22px;
-}
-
-.section-inner{
-    max-width:1180px;
-    margin:auto;
-}
-
-.section-heading{
-    max-width:650px;
-    margin-bottom:45px;
-}
-
-.section-heading span{
-    color:var(--green);
-    font-weight:800;
-    font-size:13px;
-    text-transform:uppercase;
-    letter-spacing:1.5px;
-}
-
-.section-heading h2{
-    font-size:45px;
-    line-height:1.1;
-    letter-spacing:-2px;
-    margin:10px 0 15px;
-}
-
-.section-heading p{
-    color:var(--muted);
-}
-
-.features{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
-}
-
-.feature{
-    background:white;
-    border:1px solid var(--border);
-    padding:28px;
-    border-radius:20px;
-    transition:.25s ease;
-}
-
-.feature:hover{
-    transform:translateY(-5px);
-    box-shadow:var(--shadow);
-}
-
-.feature-icon{
-    width:48px;
-    height:48px;
-    border-radius:14px;
-    background:var(--green-light);
-    display:grid;
-    place-items:center;
-    color:var(--green-dark);
-    font-size:21px;
-    margin-bottom:20px;
-}
-
-.feature h3{
-    margin-bottom:8px;
-}
-
-.feature p{
-    color:var(--muted);
-    font-size:14px;
-}
-
-/* TRANSLATION */
-
-.translation{
-    background:#102018;
-    color:white;
-}
-
-.translation-box{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:25px;
-    align-items:center;
-}
-
-.translation-copy h2{
-    font-size:48px;
-    line-height:1.08;
-    letter-spacing:-2px;
-    margin:12px 0 18px;
-}
-
-.translation-copy p{
-    color:#aebdb3;
-    max-width:520px;
-}
-
-.language-demo{
-    background:#17251d;
-    border:1px solid #2c3d32;
-    border-radius:22px;
-    padding:25px;
-}
-
-.language-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:17px 0;
-    border-bottom:1px solid #2a3930;
-}
-
-.language-row:last-child{
-    border-bottom:0;
-}
-
-.person{
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
-
-.avatar{
-    width:40px;
-    height:40px;
-    border-radius:50%;
-    background:#28633e;
-    display:grid;
-    place-items:center;
-}
-
-.language{
-    color:#9caf9f;
-    font-size:12px;
-}
-
-.language strong{
-    display:block;
-    color:white;
-    font-size:14px;
-}
-
-/* BACKGROUND */
-
-.backgrounds{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:15px;
-}
-
-.bg-option{
-    height:150px;
-    border-radius:17px;
-    border:3px solid transparent;
-    cursor:pointer;
-    position:relative;
-    overflow:hidden;
-}
-
-.bg-option.active{
-    border-color:var(--green);
-}
-
-.bg-option span{
-    position:absolute;
-    bottom:10px;
-    left:10px;
-    color:white;
-    font-size:12px;
-    font-weight:700;
-    background:rgba(0,0,0,.45);
-    padding:5px 8px;
-    border-radius:7px;
-}
-
-.bg1{
-    background:linear-gradient(135deg,#d9f99d,#166534);
-}
-
-.bg2{
-    background:linear-gradient(135deg,#dbeafe,#1e40af);
-}
-
-.bg3{
-    background:linear-gradient(135deg,#fef3c7,#92400e);
-}
-
-.bg4{
-    background:linear-gradient(135deg,#e0e7ff,#312e81);
-}
-
-/* CTA */
-
-.cta{
-    padding:100px 22px;
-}
-
-.cta-box{
-    max-width:1180px;
-    margin:auto;
-    background:linear-gradient(135deg,#16a34a,#087f3d);
-    border-radius:30px;
-    padding:70px 40px;
-    text-align:center;
-    color:white;
-    box-shadow:var(--shadow);
-}
-
-.cta-box h2{
-    font-size:48px;
-    line-height:1.1;
-    margin-bottom:15px;
-}
-
-.cta-box p{
-    color:#d8f5e2;
-    margin-bottom:28px;
-}
-
-.btn-white{
-    background:white;
-    color:var(--green-dark);
-}
-
-/* FOOTER */
-
-footer{
-    border-top:1px solid var(--border);
-    padding:35px 22px;
-}
-
-.footer-inner{
-    max-width:1180px;
-    margin:auto;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    color:var(--muted);
-    font-size:13px;
-}
-
-/* MOBILE */
-
-@media(max-width:850px){
-
-    .nav-links{
-        display:none;
-    }
-
-    .hero-inner,
-    .translation-box{
-        grid-template-columns:1fr;
-    }
-
-    .hero h1{
-        font-size:52px;
-    }
-
-    .features{
-        grid-template-columns:1fr;
-    }
-
-    .backgrounds{
-        grid-template-columns:1fr 1fr;
-    }
-
-    .section-heading h2,
-    .translation-copy h2,
-    .cta-box h2{
-        font-size:38px;
-    }
-
-    .meeting-card{
-        transform:none;
-    }
-}
-
-@media(max-width:500px){
-
-    .nav-actions .btn-outline{
-        display:none;
-    }
-
-    .hero{
-        padding-top:125px;
-    }
-
-    .hero h1{
-        font-size:43px;
-        letter-spacing:-2px;
-    }
-
-    .video{
-        min-height:120px;
-    }
-
-    .footer-inner{
-        flex-direction:column;
-        gap:10px;
-    }
-}
+:root{--bg:#eaf3fb;--ink:#10233f;--card:#fff;--blue:#1f5fd6;--red:#d64545;--soft:#d5e4f5}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:'Hind Siliguri',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+h1{font-size:2.6rem;margin:0 0 4px;letter-spacing:-1px}
+label{display:block;font-size:.9rem;margin:12px 0 4px;font-weight:500}
+input,select{width:100%;padding:11px 12px;border:1.5px solid var(--soft);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--blue);outline-offset:1px}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 16px;background:var(--blue);color:#fff;font-weight:500}
+button.ghost{background:var(--soft);color:var(--ink)}
+button.off{background:var(--red)}
+#lobby{max-width:440px;margin:0 auto;padding:8vh 20px}
+#lobby p{margin:0 0 8px}
+#lobby .card{background:var(--card);padding:22px;border-radius:16px;margin-top:18px}
+#lobby .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#go{width:100%;margin-top:20px;padding:13px;font-size:1.05rem}
+#call{display:none;height:100%;flex-direction:column}
+#stage{flex:1;position:relative;background:#0a1830;min-height:0}
+#remote{width:100%;height:100%;object-fit:contain;background:#0a1830}
+#me{position:absolute;right:14px;top:14px;width:26%;max-width:240px;min-width:110px;border-radius:12px;border:2px solid #fff;transform:scaleX(-1);background:#000}
+#status{position:absolute;left:14px;top:14px;background:#ffffffd9;padding:6px 12px;border-radius:20px;font-size:.9rem}
+#cap{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(760px,92%);text-align:center;pointer-events:none}
+#cap div{display:inline-block;background:#000000b3;color:#fff;padding:6px 12px;border-radius:10px;margin:2px;font-size:1.05rem}
+#cap .mine{background:#1f5fd6b3;font-size:.9rem}
+#bar{background:var(--card);padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+#bar select{width:auto;padding:8px}
+.bgs{display:flex;gap:6px;flex-wrap:wrap}
+.bgs button{padding:7px 11px;font-size:.85rem}
+.bgs button.on{background:var(--blue);color:#fff}
+#cam{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 </style>
 </head>
-
 <body>
 
-<!-- NAVIGATION -->
-
-<header class="navbar">
-    <div class="nav-inner">
-
-        <a href="#" class="logo">
-            <div class="logo-icon">N</div>
-            NeilUsha
-        </a>
-
-        <ul class="nav-links">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#translate">Translation</a></li>
-            <li><a href="#backgrounds">Backgrounds</a></li>
-            <li><a href="#business">Business</a></li>
-        </ul>
-
-        <div class="nav-actions">
-            <a href="#" class="btn btn-outline">Sign in</a>
-            <a href="#start" class="btn btn-green">Start Meeting</a>
-        </div>
-
+<section id="lobby">
+  <h1>neilusha</h1>
+  <p>Nijer bhashay kotha bolun, onnojon shunbe tar bhashay.</p>
+  <div class="card">
+    <label for="name">Apnar naam</label>
+    <input id="name" placeholder="Naam">
+    <label for="room">Room code (dujon-i ek code dile call hobe)</label>
+    <input id="room" placeholder="jemon: rasel123">
+    <div class="row">
+      <div><label for="speak">Ami boli</label><select id="speak"></select></div>
+      <div><label for="listen">Ami shuni</label><select id="listen"></select></div>
     </div>
-</header>
-
-
-<!-- HERO -->
-
-<section class="hero">
-
-    <div class="hero-inner">
-
-        <div>
-
-            <div class="badge">
-                <span class="badge-dot"></span>
-                The future of global meetings
-            </div>
-
-            <h1>
-                Speak your language.
-                <span>Connect with everyone.</span>
-            </h1>
-
-            <p>
-                NeilUsha brings video meetings, real-time language
-                translation, natural voice communication and smart
-                backgrounds into one simple workspace.
-            </p>
-
-            <div class="hero-buttons">
-                <a href="#start" class="btn btn-green">
-                    Start a Meeting →
-                </a>
-
-                <a href="#features" class="btn btn-outline">
-                    Explore Features
-                </a>
-            </div>
-
-        </div>
-
-
-        <!-- MEETING PREVIEW -->
-
-        <div class="meeting-card">
-
-            <div class="meeting-window">
-
-                <div class="meeting-top">
-
-                    <div>
-                        NeilUsha Meeting
-                    </div>
-
-                    <div class="live">
-                        <i></i>
-                        LIVE
-                    </div>
-
-                </div>
-
-                <div class="video-grid">
-
-                    <div class="video one">
-                        <span class="video-name">Neil • Speaking</span>
-                    </div>
-
-                    <div class="video two">
-                        <span class="video-name">Aiko • 日本語</span>
-                    </div>
-
-                    <div class="video three">
-                        <span class="video-name">Sarah • English</span>
-                    </div>
-
-                    <div class="video four">
-                        <span class="video-name">Omar • العربية</span>
-                    </div>
-
-                </div>
-
-                <div class="controls">
-
-                    <div class="control">🎤</div>
-                    <div class="control">📹</div>
-                    <div class="control">🖥</div>
-                    <div class="control">💬</div>
-                    <div class="control end">☎</div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
+    <button id="go">Call shuru korun</button>
+  </div>
 </section>
 
-
-<!-- FEATURES -->
-
-<section class="section" id="features">
-
-    <div class="section-inner">
-
-        <div class="section-heading">
-
-            <span>Everything you need</span>
-
-            <h2>
-                Meetings without language barriers.
-            </h2>
-
-            <p>
-                A familiar meeting experience with powerful
-                communication features built for a global world.
-            </p>
-
-        </div>
-
-
-        <div class="features">
-
-            <div class="feature">
-
-                <div class="feature-icon">🎥</div>
-
-                <h3>HD Video Meetings</h3>
-
-                <p>
-                    Smooth, reliable video meetings with
-                    microphone, camera and screen sharing.
-                </p>
-
-            </div>
-
-
-            <div class="feature">
-
-                <div class="feature-icon">🌍</div>
-
-                <h3>Live Translation</h3>
-
-                <p>
-                    Speak naturally in your own language while
-                    participants receive the conversation in
-                    their selected language.
-                </p>
-
-            </div>
-
-
-            <div class="feature">
-
-                <div class="feature-icon">🎙️</div>
-
-                <h3>Natural Voice</h3>
-
-                <p>
-                    Hear translated conversations as natural
-                    speech instead of relying only on subtitles.
-                </p>
-
-            </div>
-
-
-            <div class="feature">
-
-                <div class="feature-icon">🖥️</div>
-
-                <h3>Screen Sharing</h3>
-
-                <p>
-                    Present your screen, documents, applications
-                    and ideas during any meeting.
-                </p>
-
-            </div>
-
-
-            <div class="feature">
-
-                <div class="feature-icon">💬</div>
-
-                <h3>Live Captions</h3>
-
-                <p>
-                    Optional translated captions help everyone
-                    follow the conversation.
-                </p>
-
-            </div>
-
-
-            <div class="feature">
-
-                <div class="feature-icon">✨</div>
-
-                <h3>Smart Backgrounds</h3>
-
-                <p>
-                    Blur or replace your background instantly
-                    while your meeting is running.
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
+<section id="call">
+  <div id="stage">
+    <video id="remote" autoplay playsinline muted></video>
+    <canvas id="me" width="640" height="480"></canvas>
+    <div id="status">...</div>
+    <div id="cap"></div>
+  </div>
+  <div id="bar">
+    <button id="mic" class="ghost">Mic</button>
+    <button id="camBtn" class="ghost">Camera</button>
+    <div class="bgs" id="bgs"></div>
+    <select id="speak2" title="Ami boli"></select>
+    <select id="listen2" title="Ami shuni"></select>
+    <button id="leave" class="off">Leave</button>
+  </div>
+  <video id="cam" autoplay playsinline muted></video>
+  <input type="file" id="file" accept="image/*" hidden>
 </section>
 
-
-<!-- TRANSLATION -->
-
-<section class="section translation" id="translate">
-
-    <div class="section-inner">
-
-        <div class="translation-box">
-
-            <div class="translation-copy">
-
-                <span style="color:#4ade80;font-weight:800;">
-                    REAL-TIME LANGUAGE
-                </span>
-
-                <h2>
-                    Everyone speaks naturally.
-                </h2>
-
-                <p>
-                    Choose the language you want to hear.
-                    NeilUsha is designed to make multilingual
-                    conversations feel natural during a live meeting.
-                </p>
-
-            </div>
-
-
-            <div class="language-demo">
-
-                <div class="language-row">
-
-                    <div class="person">
-
-                        <div class="avatar">🇧🇩</div>
-
-                        <div>
-                            <strong>Neil</strong>
-                            <div class="language">Speaking Bengali</div>
-                        </div>
-
-                    </div>
-
-                    <div>→</div>
-
-                    <div>
-                        <strong>বাংলা</strong>
-                    </div>
-
-                </div>
-
-
-                <div class="language-row">
-
-                    <div class="person">
-
-                        <div class="avatar">🇯🇵</div>
-
-                        <div>
-                            <strong>Aiko</strong>
-                            <div class="language">Speaking Japanese</div>
-                        </div>
-
-                    </div>
-
-                    <div>→</div>
-
-                    <div>
-                        <strong>日本語</strong>
-                    </div>
-
-                </div>
-
-
-                <div class="language-row">
-
-                    <div class="person">
-
-                        <div class="avatar">🇺🇸</div>
-
-                        <div>
-                            <strong>Sarah</strong>
-                            <div class="language">Speaking English</div>
-                        </div>
-
-                    </div>
-
-                    <div>→</div>
-
-                    <div>
-                        <strong>English</strong>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- BACKGROUND -->
-
-<section class="section" id="backgrounds">
-
-    <div class="section-inner">
-
-        <div class="section-heading">
-
-            <span>Smart backgrounds</span>
-
-            <h2>
-                Change your world while you're live.
-            </h2>
-
-            <p>
-                Switch between blur, professional scenes and
-                custom backgrounds without leaving the meeting.
-            </p>
-
-        </div>
-
-
-        <div class="backgrounds">
-
-            <div class="bg-option bg1 active">
-                <span>Nature</span>
-            </div>
-
-            <div class="bg-option bg2">
-                <span>Studio</span>
-            </div>
-
-            <div class="bg-option bg3">
-                <span>Office</span>
-            </div>
-
-            <div class="bg-option bg4">
-                <span>Creative</span>
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- CTA -->
-
-<section class="cta" id="start">
-
-    <div class="cta-box">
-
-        <h2>
-            Ready to meet differently?
-        </h2>
-
-        <p>
-            Start your first NeilUsha meeting today.
-        </p>
-
-        <a href="#" class="btn btn-white">
-            Start a Free Meeting →
-        </a>
-
-    </div>
-
-</section>
-
-
-<!-- FOOTER -->
-
-<footer>
-
-    <div class="footer-inner">
-
-        <div>
-            © 2026 NeilUsha. All rights reserved.
-        </div>
-
-        <div>
-            Speak • Connect • Understand
-        </div>
-
-    </div>
-
-</footer>
-
-
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js"></script>
 <script>
+const LANGS=[['bn-BD','বাংলা'],['en-US','English'],['hi-IN','हिन्दी'],['ur-PK','اردو'],['ar-SA','العربية'],['es-ES','Español'],['fr-FR','Français'],['de-DE','Deutsch'],['pt-BR','Português'],['ru-RU','Русский'],['tr-TR','Türkçe'],['id-ID','Indonesia'],['ja-JP','日本語'],['ko-KR','한국어'],['zh-CN','中文']];
+const $=id=>document.getElementById(id);
+const base=l=>(l||'').split('-')[0];
+const code=l=>l.startsWith('zh')?'zh-CN':base(l);
 
-/* Background selector */
-
-const backgrounds = document.querySelectorAll(".bg-option");
-
-backgrounds.forEach(bg => {
-
-    bg.addEventListener("click", () => {
-
-        backgrounds.forEach(item =>
-            item.classList.remove("active")
-        );
-
-        bg.classList.add("active");
-
-    });
-
+['speak','listen','speak2','listen2'].forEach(id=>{
+  $(id).innerHTML=LANGS.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');
 });
+$('speak').value='bn-BD'; $('listen').value='en-US';
 
+let S={name:'',room:'',speak:'bn-BD',listen:'en-US',bg:'none',bgImg:null,camOff:false,micOn:true,running:false,peerLang:null,peerName:'Friend'};
+let media,outStream,seg,peer,conn,rec;
+const cam=$('cam'), canvas=$('me'), ctx=canvas.getContext('2d');
 
-/* Simple live indicator */
-
-setInterval(() => {
-
-    const dot = document.querySelector(".live i");
-
-    if(dot){
-        dot.style.opacity =
-            dot.style.opacity === "0.35" ? "1" : "0.35";
+/* ---------- Background choices ---------- */
+const BGS=[['none','None'],['blur','Blur'],['blue','Blue'],['sunset','Sunset'],['forest','Forest'],['image','My image']];
+$('bgs').innerHTML=BGS.map(([k,n])=>`<button class="ghost ${k==='none'?'on':''}" data-k="${k}">${n}</button>`).join('');
+$('bgs').onclick=e=>{
+  const k=e.target.dataset.k; if(!k) return;
+  if(k==='image'){$('file').click();return;}
+  setBg(k);
+};
+$('file').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const img=new Image(); img.onload=()=>{S.bgImg=img;setBg('image')}; img.src=URL.createObjectURL(f);
+};
+function setBg(k){
+  S.bg=k;
+  document.querySelectorAll('#bgs button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+}
+function paintBg(image){
+  const w=canvas.width,h=canvas.height;
+  if(S.bg==='blur'){ctx.filter='blur(14px)';ctx.drawImage(image,0,0,w,h);ctx.filter='none';return;}
+  if(S.bg==='image'&&S.bgImg){ctx.drawImage(S.bgImg,0,0,w,h);return;}
+  const g=ctx.createLinearGradient(0,0,w,h);
+  if(S.bg==='blue'){g.addColorStop(0,'#1f5fd6');g.addColorStop(1,'#7fd1ff');}
+  else if(S.bg==='sunset'){g.addColorStop(0,'#ff8a5b');g.addColorStop(1,'#7a3e9d');}
+  else {g.addColorStop(0,'#1e6b4a');g.addColorStop(1,'#a4d65e');}
+  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+}
+function onSeg(r){
+  const w=canvas.width,h=canvas.height;
+  ctx.save();
+  ctx.clearRect(0,0,w,h);
+  ctx.drawImage(r.segmentationMask,0,0,w,h);
+  ctx.globalCompositeOperation='source-in';
+  ctx.drawImage(r.image,0,0,w,h);
+  ctx.globalCompositeOperation='destination-over';
+  paintBg(r.image);
+  ctx.restore();
+}
+async function loop(){
+  if(!S.running) return;
+  try{
+    if(S.camOff){
+      ctx.fillStyle='#10233f';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#fff';ctx.font='64px sans-serif';ctx.textAlign='center';
+      ctx.fillText((S.name[0]||'?').toUpperCase(),canvas.width/2,canvas.height/2+22);
+    } else if(S.bg==='none'){
+      ctx.drawImage(cam,0,0,canvas.width,canvas.height);
+    } else if(cam.readyState>=2){
+      await seg.send({image:cam});
     }
+  }catch(e){}
+  requestAnimationFrame(loop);
+}
 
-}, 800);
+/* ---------- Start ---------- */
+$('go').onclick=async()=>{
+  S.name=$('name').value.trim()||'Guest';
+  S.room=$('room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  S.speak=$('speak').value; S.listen=$('listen').value;
+  if(!S.room){alert('Room code din');return;}
+  try{
+    media=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480},audio:{echoCancellation:true,noiseSuppression:true}});
+  }catch(e){alert('Camera/mic allow korun');return;}
+  $('lobby').style.display='none'; $('call').style.display='flex';
+  $('speak2').value=S.speak; $('listen2').value=S.listen;
+  cam.srcObject=media; await cam.play();
+  seg=new SelfieSegmentation({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${f}`});
+  seg.setOptions({modelSelection:1}); seg.onResults(onSeg);
+  S.running=true; loop();
+  outStream=canvas.captureStream(30);
+  media.getAudioTracks().forEach(t=>outStream.addTrack(t));
+  startPeer(); startRec();
+};
 
+/* ---------- Connection ---------- */
+function status(t){$('status').textContent=t;}
+function startPeer(){
+  const id='neilusha-'+S.room;
+  status('Connecting...');
+  peer=new Peer(id);
+  peer.on('open',()=>status('Room '+S.room+': kew join korar opekkha...'));
+  peer.on('call',c=>{c.answer(outStream);handleCall(c);});
+  peer.on('connection',handleConn);
+  peer.on('error',e=>{
+    if(e.type==='unavailable-id'){peer.destroy();joinGuest(id);}
+    else status('Error: '+e.type);
+  });
+}
+function joinGuest(id){
+  peer=new Peer();
+  peer.on('open',()=>{
+    handleCall(peer.call(id,outStream));
+    handleConn(peer.connect(id));
+  });
+  peer.on('error',e=>status('Error: '+e.type));
+}
+function handleCall(c){
+  c.on('stream',s=>{$('remote').srcObject=s;$('remote').play().catch(()=>{});status('Connected');updateAudio();});
+  c.on('close',()=>status('Onnojon chole gelen'));
+}
+function handleConn(d){
+  conn=d;
+  const hello=()=>send({type:'hello',name:S.name,lang:S.speak});
+  d.open?hello():d.on('open',hello);
+  d.on('data',onData);
+}
+function send(m){if(conn&&conn.open)conn.send(m);}
+function updateAudio(){
+  // same language: play original voice; different: mute, we speak the translation
+  $('remote').muted=!(S.peerLang&&base(S.peerLang)===base(S.listen));
+}
+
+/* ---------- Speech -> translate -> voice ---------- */
+async function onData(m){
+  if(m.type==='hello'){S.peerLang=m.lang;S.peerName=m.name;updateAudio();return;}
+  if(m.type!=='speech') return;
+  let text=m.text;
+  if(base(m.lang)!==base(S.listen)){
+    try{
+      const u=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(m.text)}&langpair=${code(m.lang)}|${code(S.listen)}`;
+      const j=await (await fetch(u)).json();
+      text=j.responseData.translatedText||m.text;
+    }catch(e){text=m.text;}
+    const ut=new SpeechSynthesisUtterance(text);
+    ut.lang=S.listen; speechSynthesis.speak(ut);
+  }
+  caption(S.peerName+': '+text,false);
+}
+function caption(t,mine){
+  const d=document.createElement('div');
+  if(mine)d.className='mine';
+  d.textContent=t; $('cap').appendChild(d);
+  setTimeout(()=>d.remove(),6000);
+  while($('cap').children.length>4)$('cap').firstChild.remove();
+}
+function startRec(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){status('Chrome/Edge use korun (speech support nei)');return;}
+  rec=new SR(); rec.lang=S.speak; rec.continuous=true; rec.interimResults=false;
+  rec.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(!e.results[i].isFinal) continue;
+      const text=e.results[i][0].transcript.trim();
+      if(!text) continue;
+      caption('Ami: '+text,true);
+      send({type:'speech',text,lang:S.speak});
+    }
+  };
+  rec.onend=()=>{if(S.running&&S.micOn)setTimeout(()=>{try{rec.lang=S.speak;rec.start()}catch(e){}},300);};
+  rec.onerror=()=>{};
+  try{rec.start();}catch(e){}
+}
+
+/* ---------- Controls ---------- */
+$('mic').onclick=()=>{
+  S.micOn=!S.micOn;
+  media.getAudioTracks().forEach(t=>t.enabled=S.micOn);
+  $('mic').classList.toggle('off',!S.micOn); $('mic').classList.toggle('ghost',S.micOn);
+  $('mic').textContent=S.micOn?'Mic':'Mic off';
+  if(S.micOn)startRec(); else try{rec.stop()}catch(e){}
+};
+$('camBtn').onclick=()=>{
+  S.camOff=!S.camOff;
+  $('camBtn').classList.toggle('off',S.camOff); $('camBtn').classList.toggle('ghost',!S.camOff);
+  $('camBtn').textContent=S.camOff?'Camera off':'Camera';
+};
+$('speak2').onchange=e=>{
+  S.speak=e.target.value;
+  send({type:'hello',name:S.name,lang:S.speak});
+  try{rec.stop()}catch(e){} // restarts with new language
+};
+$('listen2').onchange=e=>{S.listen=e.target.value;updateAudio();};
+$('leave').onclick=()=>{
+  S.running=false;
+  try{rec.stop()}catch(e){}
+  try{peer.destroy()}catch(e){}
+  media.getTracks().forEach(t=>t.stop());
+  speechSynthesis.cancel(); location.reload();
+};
 </script>
-
 </body>
 </html>
