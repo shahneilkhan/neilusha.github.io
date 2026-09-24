@@ -1,207 +1,142 @@
-/* NeilUsha V2 - frontend simulation (no backend). One script for all pages. */
-const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const LANGS={en:'English',bn:'বাংলা',hi:'हिन्दी',es:'Español',ar:'العربية',ja:'日本語'};
+:root{--forest:#0b3b2c;--deep:#082a20;--emerald:#12a072;--mint:#e9f5ee;--paper:#fbfdfb;--gold:#c8a24a;--ink:#0d2b21;--line:#cfe3d7;--red:#d64545}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{font-family:'Hind Siliguri',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5}
+a{color:inherit;text-decoration:none}
+button,input,select{font:inherit}
+input,select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+:focus-visible{outline:3px solid var(--emerald);outline-offset:2px}
+.btn{display:inline-block;border:0;cursor:pointer;background:var(--emerald);color:#fff;font-weight:600;padding:11px 20px;border-radius:12px;text-align:center}
+.btn:hover{background:#0e8a62}
+.btn.big{padding:15px 28px;font-size:1.1rem}
+.btn.line{background:transparent;color:var(--forest);border:1.5px solid var(--forest)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.25rem}
+.logo{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--forest);color:var(--gold);font-weight:700}
 
-/* ---------- UI text (en / bn / hi) ---------- */
-const T={
-en:{tagline:'Speak your language. Everyone hears theirs.',sub:'NeilUsha is a meeting room where each person talks in their native language and listens in the one they choose.',start:'Start a meeting',dash:'Dashboard',create:'Create meeting',join:'Join meeting',title:'Meeting title',code:'Meeting code',go:'Join',recent:'Recent meetings',none:'No meetings yet',chat:'Chat',people:'People',scenes:'Backgrounds',send:'Send',msg:'Type a message',settings:'Settings',name:'Your name',speak:'I speak',lang:'I hear',notif:'Notifications',caps:'Live captions',hear:'You hear',copied:'Link copied',f1:'Live translation',f2:'Custom backgrounds',f3:'Screen sharing',upload:'Upload image',demo:'Demo mode: video and translation are simulated',joined:'joined the meeting',sharing:'You are sharing your screen',stopped:'Screen sharing stopped',badcode:'Enter a valid meeting code',leaveq:'Leave this meeting?',blur:'Blur',bgset:'Background updated'},
-bn:{tagline:'নিজের ভাষায় বলুন। সবাই নিজের ভাষায় শুনুন।',sub:'নীলউষা এমন একটি মিটিং রুম, যেখানে প্রত্যেকে মাতৃভাষায় কথা বলে এবং নিজের পছন্দের ভাষায় শোনে।',start:'মিটিং শুরু করুন',dash:'ড্যাশবোর্ড',create:'মিটিং তৈরি করুন',join:'মিটিংয়ে যোগ দিন',title:'মিটিংয়ের নাম',code:'মিটিং কোড',go:'যোগ দিন',recent:'সাম্প্রতিক মিটিং',none:'এখনো কোনো মিটিং নেই',chat:'চ্যাট',people:'অংশগ্রহণকারী',scenes:'ব্যাকগ্রাউন্ড',send:'পাঠান',msg:'বার্তা লিখুন',settings:'সেটিংস',name:'আপনার নাম',speak:'আমি বলি',lang:'আমি শুনি',notif:'নোটিফিকেশন',caps:'লাইভ ক্যাপশন',hear:'আপনি শুনছেন',copied:'লিংক কপি হয়েছে',f1:'লাইভ অনুবাদ',f2:'পছন্দমতো ব্যাকগ্রাউন্ড',f3:'স্ক্রিন শেয়ার',upload:'ছবি আপলোড করুন',demo:'ডেমো মোড: ভিডিও ও অনুবাদ নকল করে দেখানো হচ্ছে',joined:'মিটিংয়ে যোগ দিয়েছেন',sharing:'আপনি স্ক্রিন শেয়ার করছেন',stopped:'স্ক্রিন শেয়ার বন্ধ হয়েছে',badcode:'সঠিক মিটিং কোড দিন',leaveq:'মিটিং ছেড়ে যাবেন?',blur:'ব্লার',bgset:'ব্যাকগ্রাউন্ড বদলেছে'},
-hi:{tagline:'अपनी भाषा में बोलिए। सब अपनी भाषा में सुनें।',sub:'नीलउषा ऐसा मीटिंग रूम है जहाँ हर कोई अपनी मातृभाषा में बोलता है और अपनी पसंद की भाषा में सुनता है।',start:'मीटिंग शुरू करें',dash:'डैशबोर्ड',create:'मीटिंग बनाएँ',join:'मीटिंग से जुड़ें',title:'मीटिंग का नाम',code:'मीटिंग कोड',go:'जुड़ें',recent:'हाल की मीटिंग',none:'अभी कोई मीटिंग नहीं',chat:'चैट',people:'प्रतिभागी',scenes:'बैकग्राउंड',send:'भेजें',msg:'संदेश लिखें',settings:'सेटिंग्स',name:'आपका नाम',speak:'मैं बोलता/बोलती हूँ',lang:'मैं सुनता/सुनती हूँ',notif:'नोटिफिकेशन',caps:'लाइव कैप्शन',hear:'आप सुन रहे हैं',copied:'लिंक कॉपी हो गया',f1:'लाइव अनुवाद',f2:'अपनी पसंद का बैकग्राउंड',f3:'स्क्रीन शेयरिंग',upload:'तस्वीर अपलोड करें',demo:'डेमो मोड: वीडियो और अनुवाद नकली हैं',joined:'मीटिंग में शामिल हुए',sharing:'आप स्क्रीन शेयर कर रहे हैं',stopped:'स्क्रीन शेयरिंग बंद हुई',badcode:'सही मीटिंग कोड दें',leaveq:'मीटिंग छोड़ें?',blur:'ब्लर',bgset:'बैकग्राउंड बदल गया'}
-};
-const t=k=>(T[S.lang]||T.en)[k]||T.en[k]||k;
+/* landing + dashboard */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:16px 5vw;background:var(--paper);border-bottom:1px solid var(--line)}
+.navr{display:flex;gap:10px;align-items:center}
+.navr select{width:auto;padding:8px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:5vw;align-items:center;padding:8vh 5vw;background:linear-gradient(120deg,var(--mint),var(--paper))}
+.hero h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.15;margin:0 0 16px;color:var(--forest);letter-spacing:-1px}
+.hero p{max-width:52ch;margin:0 0 26px;font-size:1.1rem}
+.demo{background:var(--forest);color:#fff;border-radius:20px;padding:22px;box-shadow:0 20px 50px #0b3b2c40}
+.demo .row{padding:12px 0;border-bottom:1px solid #ffffff22}
+.demo .row:last-child{border:0}
+.demo small{color:var(--gold)}
+.demo .o{opacity:.75}
+.demo .t{font-size:1.15rem;font-weight:600}
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:6vh 5vw}
+.feats div{padding:22px;border:1.5px solid var(--line);border-radius:16px;font-weight:600}
+.feats span{display:block;font-size:1.8rem}
+.wrap{max-width:980px;margin:0 auto;padding:5vh 5vw}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.card{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:24px}
+.card h2{margin:0 0 14px;color:var(--forest)}
+.card input{margin-bottom:12px}
+.card .btn{width:100%}
+.recent{list-style:none;padding:0;margin:12px 0 0}
+.recent li{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.recent small{opacity:.65}
 
-/* ---------- Settings (saved in this browser) ---------- */
-const store={
-  get(k,d){try{const v=localStorage.getItem('nu_'+k);return v===null?d:JSON.parse(v)}catch{return d}},
-  set(k,v){try{localStorage.setItem('nu_'+k,JSON.stringify(v))}catch{}}
-};
-const S={name:store.get('name','You'),native:store.get('native','bn'),lang:store.get('lang','en'),notif:store.get('notif',true),caps:store.get('caps',true)};
-function save(){['name','native','lang','notif','caps'].forEach(k=>store.set(k,S[k]));}
+/* settings + toasts */
+dialog{border:0;border-radius:18px;padding:0;width:min(400px,92vw);box-shadow:0 20px 60px #0006}
+.setbox{padding:22px;display:grid;gap:12px}
+.setbox h3{margin:0;color:var(--forest)}
+.setbox label{display:grid;gap:4px;font-weight:500}
+.setbox .row{display:flex;align-items:center;gap:10px}
+.setbox .row input{width:auto}
+#toasts{position:fixed;top:14px;right:14px;display:grid;gap:8px;z-index:20;max-width:min(340px,90vw)}
+.toast{background:var(--forest);color:#fff;padding:11px 16px;border-radius:12px;border-left:4px solid var(--gold);box-shadow:0 8px 24px #0004;animation:in .25s}
+@keyframes in{from{transform:translateY(-8px);opacity:0}}
 
-function toast(msg,force){
-  if(!S.notif&&!force) return;
-  const d=document.createElement('div'); d.className='toast'; d.textContent=msg;
-  $('#toasts').appendChild(d); setTimeout(()=>d.remove(),3500);
+/* meeting room */
+.room{height:100dvh;display:grid;grid-template-rows:auto 1fr auto;background:var(--deep);color:#fff;position:relative}
+.mbar{display:flex;gap:8px;align-items:center;padding:10px 14px;overflow-x:auto}
+.mbar .brand{margin-right:auto;font-size:1.05rem;white-space:nowrap}
+.chip{background:#ffffff1a;border:0;color:#fff;padding:6px 12px;border-radius:20px;font-size:.85rem;white-space:nowrap;cursor:pointer}
+.stage{overflow:auto;padding:8px 12px;min-height:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;align-content:center;min-height:100%}
+.tile{position:relative;aspect-ratio:16/10;border-radius:16px;overflow:hidden;background:#123d30;border:3px solid transparent;transition:border-color .2s}
+.tile.speaking{border-color:var(--emerald)}
+.tile .bg{position:absolute;inset:0}
+.tile .bg.blur{filter:blur(10px);transform:scale(1.1)}
+.tile.camoff .bg{filter:brightness(.35)}
+.avatar{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:26%;aspect-ratio:1;border-radius:50%;background:var(--forest);border:3px solid var(--gold);display:grid;place-items:center;font-size:2rem;font-weight:700;color:#fff}
+.tag,.lchip{position:absolute;bottom:8px;background:#000000a6;padding:3px 10px;border-radius:8px;font-size:.82rem}
+.tag{left:8px}
+.lchip{right:8px;color:var(--gold)}
+.stage.sharing{display:grid;grid-template-columns:1fr 210px;gap:12px}
+.sharing .grid{grid-template-columns:1fr;align-content:start}
+#share{background:#f5faf7;color:var(--ink);border-radius:14px;overflow:hidden;min-height:260px}
+#share .wb{background:var(--forest);color:#fff;padding:8px 14px;font-size:.85rem}
+#share .body{padding:24px}
+#share .ln{height:12px;border-radius:6px;background:var(--line);margin:12px 0}
+.caption{position:absolute;left:50%;bottom:86px;transform:translateX(-50%);width:min(680px,92%);background:#000000c4;padding:10px 16px;border-radius:14px;text-align:center;pointer-events:none;z-index:3}
+.caption small{color:var(--gold)}
+.caption .o{opacity:.7;font-size:.9rem}
+.caption .tr{font-size:1.15rem;font-weight:600}
+.controls{display:flex;gap:10px;justify-content:center;padding:12px;background:#0006;overflow-x:auto}
+.cb{position:relative;flex:none;width:48px;height:48px;border-radius:50%;border:0;background:#ffffff22;color:#fff;font-size:1.25rem;cursor:pointer}
+.cb.off{background:var(--red)}
+.cb.on{background:var(--emerald)}
+.cb.leave{background:var(--red);width:64px;border-radius:24px}
+.cb i{position:absolute;top:-2px;right:-2px;background:var(--gold);color:var(--deep);font-style:normal;font-size:.7rem;font-weight:700;border-radius:10px;padding:0 6px}
+.panel{position:absolute;right:12px;top:58px;bottom:84px;width:340px;background:#fff;color:var(--ink);border-radius:16px;display:flex;flex-direction:column;z-index:4;box-shadow:0 10px 40px #0007}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;border:0;background:none;padding:12px 4px;cursor:pointer;font-weight:600}
+.tabs .on{color:var(--emerald);box-shadow:inset 0 -3px var(--emerald)}
+.pbody{flex:1;overflow:auto;padding:12px;min-height:0}
+#tab-chat{display:flex;flex-direction:column}
+#msgs{flex:1;overflow:auto;display:grid;gap:8px;align-content:start}
+.msg{background:var(--mint);padding:8px 12px;border-radius:12px;max-width:88%}
+.msg.me{background:var(--emerald);color:#fff;justify-self:end}
+.msg b{font-size:.8rem}
+.msg p{margin:0}
+.msg small{opacity:.7}
+#chatForm{display:flex;gap:8px;margin-top:10px}
+#chatForm .btn{padding:8px 14px}
+.scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.scenes button{aspect-ratio:1;border-radius:12px;border:3px solid transparent;cursor:pointer;font-size:.8rem;color:#fff;text-shadow:0 1px 3px #000}
+.scenes .on{border-color:var(--emerald)}
+.plist div{padding:10px 0;border-bottom:1px solid var(--line)}
+.up{display:block;margin-top:12px;text-align:center;cursor:pointer;padding:10px;border:1.5px dashed var(--emerald);border-radius:12px;color:var(--emerald);font-weight:600}
+.demo-note{font-size:.75rem;opacity:.7;text-align:center;padding:0 0 4px}
+
+@media(max-width:720px){
+ .hero,.cards,.feats{grid-template-columns:1fr}
+ .stage.sharing{grid-template-columns:1fr}
+ .sharing .grid{grid-template-columns:repeat(2,1fr)}
+ .grid{grid-template-columns:repeat(2,1fr)}
+ .panel{left:8px;right:8px;width:auto;top:auto;height:62vh;bottom:78px}
+ .caption{bottom:82px}
+ .avatar{font-size:1.3rem}
 }
-function applyLang(){
-  document.documentElement.lang=S.lang;
-  $$('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
-  $$('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
-  $$('[data-lang-select]').forEach(s=>s.value=S.lang);
-  if($('#hearLang')) $('#hearLang').textContent=LANGS[S.lang];
-}
-function injectUI(){
-  const opts=Object.entries(LANGS).map(([c,n])=>`<option value="${c}">${n}</option>`).join('');
-  document.body.insertAdjacentHTML('beforeend',`<div id="toasts" aria-live="polite"></div>
-  <dialog id="set"><form method="dialog" class="setbox"><h3>⚙️ <span data-i18n="settings"></span></h3>
-  <label><span data-i18n="name"></span><input id="sName" maxlength="24"></label>
-  <label><span data-i18n="speak"></span><select id="sNative">${opts}</select></label>
-  <label><span data-i18n="lang"></span><select id="sLang">${opts}</select></label>
-  <label class="row"><input type="checkbox" id="sNotif"><span data-i18n="notif"></span></label>
-  <label class="row"><input type="checkbox" id="sCaps"><span data-i18n="caps"></span></label>
-  <button class="btn">OK</button></form></dialog>`);
-  $$('[data-lang-select]').forEach(s=>{s.innerHTML=opts;s.onchange=()=>setLang(s.value);});
-  $('#sName').value=S.name; $('#sNative').value=S.native; $('#sLang').value=S.lang;
-  $('#sNotif').checked=S.notif; $('#sCaps').checked=S.caps;
-  $('#sName').oninput=e=>{S.name=e.target.value.trim()||'You';changed();};
-  $('#sNative').onchange=e=>{S.native=e.target.value;changed();};
-  $('#sLang').onchange=e=>setLang(e.target.value);
-  $('#sNotif').onchange=e=>{S.notif=e.target.checked;changed();};
-  $('#sCaps').onchange=e=>{S.caps=e.target.checked;changed();};
-  $$('[data-open-settings]').forEach(b=>b.onclick=()=>$('#set').showModal());
-}
-function setLang(l){
-  S.lang=l; if($('#sLang'))$('#sLang').value=l; changed();
-  toast('🌍 '+LANGS[l]);
-}
-function changed(){save();applyLang();document.dispatchEvent(new Event('nu:change'));}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-/* ---------- Dashboard ---------- */
-function dashboard(){
-  const gen=()=>{const r=n=>Array.from({length:n},()=>'abcdefghijkmnpqrstuvwxyz'[Math.random()*24|0]).join('');return r(3)+'-'+r(4)+'-'+r(3)};
-  const go=(code,title)=>{
-    const list=store.get('recent',[]).filter(x=>x.code!==code);
-    list.unshift({code,title,t:Date.now()}); store.set('recent',list.slice(0,5));
-    location.href='meeting.html?room='+encodeURIComponent(code);
-  };
-  $('#create').onclick=()=>go(gen(),$('#mtitle').value.trim()||'Untitled');
-  $('#joinForm').onsubmit=e=>{
-    e.preventDefault();
-    const c=$('#jcode').value.trim().toLowerCase();
-    if(c.length<5) return toast('⚠️ '+t('badcode'),true);
-    go(c,c);
-  };
-  const list=store.get('recent',[]);
-  $('#recent').innerHTML=list.length?list.map(x=>`<li><span>${x.title.replace(/</g,'&lt;')}<br><small>${x.code.replace(/</g,'&lt;')}</small></span><a class="btn line" href="meeting.html?room=${encodeURIComponent(x.code)}">${t('go')}</a></li>`).join(''):`<li><small>${t('none')}</small></li>`;
-  document.addEventListener('nu:change',()=>dashboard.render&&0);
-}
-
-/* ---------- Meeting room (simulation) ---------- */
-const SCENES={
-  none:'linear-gradient(135deg,#14503c,#0b3b2c)',
-  beach:'linear-gradient(#8fd3f4,#e8d9a8 70%,#f1c27d)',
-  forest:'linear-gradient(#2d6a4f,#95d5b2)',
-  office:'linear-gradient(135deg,#dfe7e2,#b8c5bd)',
-  night:'linear-gradient(#0f2027,#2c5364)',
-  sunset:'linear-gradient(#ff8a5b,#7a3e9d)'
-};
-const BLURBASE='repeating-linear-gradient(90deg,#c9d6cf 0 24px,#9fb2a7 24px 48px)';
-const LINES={
-  bn:[{o:'সবাইকে শুভ সকাল, শুরু করা যাক।',en:"Good morning everyone, let's begin.",hi:'सभी को सुप्रभात, शुरू करते हैं।'},{o:'আমি স্ক্রিনটা শেয়ার করছি।',en:"I'm sharing my screen.",hi:'मैं स्क्रीन शेयर कर रही हूँ।'}],
-  ja:[{o:'資料をご確認ください。',en:'Please check the document.',bn:'নথিটি দেখে নিন।',hi:'कृपया दस्तावेज़ देखें।'},{o:'質問はありますか？',en:'Any questions?',bn:'কোনো প্রশ্ন আছে?',hi:'कोई सवाल है?'}],
-  es:[{o:'Me parece una gran idea.',en:"I think it's a great idea.",bn:'আমার কাছে এটা দারুণ আইডিয়া মনে হচ্ছে।',hi:'मुझे यह बहुत अच्छा विचार लगता है।'},{o:'Podemos verlo mañana.',en:'We can look at it tomorrow.',bn:'আমরা এটা আগামীকাল দেখতে পারি।',hi:'हम इसे कल देख सकते हैं।'}]
-};
-function meeting(){
-  const room=new URLSearchParams(location.search).get('room')||'demo-room-000';
-  $('#roomCode').textContent=room;
-  let mic=true,cam=true,sharing=false,scene='none',blur=false,customBg=null,unread=0,panelTab=null,spk=0;
-  const others=[{id:'a',name:'Ayesha',native:'bn',bg:SCENES.forest},{id:'k',name:'Kenji',native:'ja',bg:SCENES.night},{id:'s',name:'Sofia',native:'es',bg:SCENES.sunset}];
-  let people=[{id:'me',name:S.name,native:S.native,me:true}];
-
-  const myBg=()=>blur?BLURBASE:customBg?`center/cover url(${customBg})`:SCENES[scene];
-  function render(){
-    people[0].name=S.name; people[0].native=S.native;
-    $('#grid').innerHTML=people.map(p=>{
-      const isMe=p.me, on=isMe?cam:true, m=isMe?mic:true;
-      return `<div class="tile ${on?'':'camoff'}" data-id="${p.id}">
-        <div class="bg ${isMe&&blur?'blur':''}" style="background:${isMe?myBg():p.bg}"></div>
-        <div class="avatar">${on?p.name[0].toUpperCase():'📷'}</div>
-        <span class="tag">${m?'🎤':'🔇'} ${isMe?p.name+' ('+t('hear').split(' ')[0]+')':p.name}</span>
-        <span class="lchip">🗣️ ${LANGS[p.native]}${isMe?'':' → '+LANGS[S.lang]}</span></div>`;
-    }).join('');
-    $('#tab-people').innerHTML=people.map(p=>`<div>${p.me?'⭐ ':''}${p.name} · ${LANGS[p.native]} ${p.me?(mic?'🎤':'🔇'):'🎤'}</div>`).join('');
-    $('#mic').classList.toggle('off',!mic); $('#mic').textContent=mic?'🎤':'🔇';
-    $('#cam').classList.toggle('off',!cam);
-    $('#ccBtn').classList.toggle('on',S.caps);
-    if(!S.caps) $('#caption').hidden=true;
-  }
-
-  /* controls */
-  $('#mic').onclick=()=>{mic=!mic;render();};
-  $('#cam').onclick=()=>{cam=!cam;render();};
-  $('#ccBtn').onclick=()=>{S.caps=!S.caps;changed();};
-  $('#shareBtn').onclick=()=>{
-    sharing=!sharing;
-    $('#share').hidden=!sharing; $('#stage').classList.toggle('sharing',sharing);
-    $('#shareBtn').classList.toggle('on',sharing);
-    toast('🖥️ '+t(sharing?'sharing':'stopped'));
-  };
-  $('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);}catch{} toast('🔗 '+t('copied'),true);};
-  $('#leave').onclick=()=>{if(confirm(t('leaveq')))location.href='dashboard.html';};
-
-  /* side panel: chat / people / backgrounds */
-  function openPanel(tab){
-    if(panelTab===tab){panelTab=null;$('#panel').hidden=true;return;}
-    panelTab=tab; $('#panel').hidden=false;
-    $$('[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
-    $$('[data-body]').forEach(b=>b.hidden=b.dataset.body!==tab);
-    if(tab==='chat'){unread=0;$('#badge').hidden=true;}
-  }
-  $$('[data-open]').forEach(b=>b.onclick=()=>openPanel(b.dataset.open));
-  $$('[data-tab]').forEach(b=>b.onclick=()=>{panelTab=null;openPanel(b.dataset.tab);});
-
-  /* backgrounds */
-  function buildScenes(){
-    $('#scenes').innerHTML=Object.keys(SCENES).map(k=>`<button data-s="${k}" class="${!blur&&!customBg&&scene===k?'on':''}" style="background:${SCENES[k]}">${k}</button>`).join('')
-      +`<button data-s="blur" class="${blur?'on':''}" style="background:${BLURBASE};filter:blur(.5px)">${t('blur')}</button>`;
-    $$('#scenes button').forEach(b=>b.onclick=()=>{
-      const k=b.dataset.s; customBg=null;
-      blur=k==='blur'; if(!blur)scene=k;
-      buildScenes(); render(); toast('🎨 '+t('bgset'));
-    });
-  }
-  $('#bgFile').onchange=e=>{
-    const f=e.target.files[0]; if(!f) return;
-    customBg=URL.createObjectURL(f); blur=false; buildScenes(); render(); toast('🎨 '+t('bgset'));
-  };
-
-  /* chat */
-  function addMsg(from,text,note,me){
-    const d=document.createElement('div'); d.className='msg'+(me?' me':'');
-    d.innerHTML='<b></b><p></p><small></small>';
-    d.children[0].textContent=from; d.children[1].textContent=text; d.children[2].textContent=note||'';
-    $('#msgs').appendChild(d); $('#msgs').scrollTop=1e6;
-    if(!me&&panelTab!=='chat'){unread++;$('#badge').textContent=unread;$('#badge').hidden=false;toast('✉️ '+from);}
-  }
-  const tr=(line,p)=>p.native===S.lang?{text:line.o,note:''}:{text:line[S.lang]||line.en,note:'🌍 '+LANGS[p.native]+' → '+LANGS[S.lang]+(line[S.lang]?'':' (EN)')};
-  $('#chatForm').onsubmit=e=>{
-    e.preventDefault();
-    const v=$('#chatIn').value.trim(); if(!v) return;
-    addMsg(S.name,v,'',true); $('#chatIn').value='';
-    setTimeout(()=>{
-      const p=people.filter(x=>!x.me); if(!p.length) return;
-      const who=p[Math.random()*p.length|0], line=LINES[who.native][Math.random()*2|0], r=tr(line,who);
-      addMsg(who.name,r.text,r.note);
-    },1600);
-  };
-
-  /* simulated join, speaking and live captions */
-  others.forEach((p,i)=>setTimeout(()=>{people.push(p);render();toast('👋 '+p.name+' '+t('joined'));},1200*(i+1)));
-  setInterval(()=>{
-    const p=people.filter(x=>!x.me); if(!p.length) return;
-    const who=p[spk++%p.length], line=LINES[who.native][Math.random()*2|0], r=tr(line,who);
-    const tile=$(`[data-id="${who.id}"]`); if(tile){tile.classList.add('speaking');setTimeout(()=>tile.classList.remove('speaking'),3000);}
-    if(S.caps){
-      const c=$('#caption'); c.hidden=false;
-      c.innerHTML=`<small></small><div class="o"></div><div class="tr"></div>`;
-      c.children[0].textContent=who.name+' · 🗣️ '+LANGS[who.native];
-      c.children[1].textContent=r.note?line.o:'';
-      c.children[2].textContent=(r.note?'🌍 ':'')+r.text;
-      setTimeout(()=>{c.hidden=true;},3600);
-    }
-  },5000);
-
-  /* timer */
-  const t0=Date.now();
-  setInterval(()=>{const s=(Date.now()-t0)/1000|0;$('#timer').textContent=String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);
-
-  document.addEventListener('nu:change',render);
-  buildScenes(); render();
-  addMsg('NeilUsha','👋 '+room,'');
-}
-
-/* ---------- Boot ---------- */
-injectUI(); applyLang();
-const page=document.body.dataset.page;
-if(page==='dashboard') dashboard();
-if(page==='meeting') meeting();
+/* V2.1: login, lobby, hand + reactions, 404, dark theme */
+.center{min-height:calc(100vh - 70px);display:grid;place-items:center;padding:24px}
+.box{width:min(420px,100%)}
+.box label{display:block;margin:0 0 10px;font-weight:500}
+.box label input{margin-top:4px}
+.note{font-size:.85rem;opacity:.7;margin:10px 0 0}
+.linkbtn{background:none;border:0;color:var(--emerald);font-weight:600;cursor:pointer;margin-top:12px;width:100%}
+.nf{text-align:center}
+.nf h1{font-size:4rem;margin:0;color:var(--forest)}
+.lobby{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;max-width:940px;margin:0 auto;padding:5vh 5vw;align-items:center}
+.pv{position:relative;aspect-ratio:4/3;background:var(--forest);border-radius:18px;overflow:hidden}
+.pv video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.pv .lav{position:absolute;inset:0;display:grid;place-items:center;font-size:4rem;color:#fff;font-weight:700}
+.pv .ctl{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:10px}
+.hand{position:absolute;top:8px;right:8px;background:var(--gold);border-radius:10px;padding:2px 8px;font-size:1.1rem}
+.reacts{display:flex;gap:6px;justify-content:center;padding-bottom:6px}
+.reacts button{background:#ffffff22;border:0;border-radius:50%;width:42px;height:42px;font-size:1.3rem;cursor:pointer}
+.flyzone{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.fly{position:absolute;bottom:90px;font-size:2.2rem;animation:rise 2.2s ease-out forwards}
+@keyframes rise{to{transform:translateY(-55vh);opacity:0}}
+body[data-page]:not([data-page=meeting]){transition:background .2s}
+html[data-theme=dark] body:not([data-page=meeting]){--paper:#0e1a15;--ink:#e6f2ec;--mint:#12251d;--line:#24443a;--forest:#12805c}
+html[data-theme=dark] body:not([data-page=meeting]) :is(.card,input,select,dialog){background:#13261e;color:var(--ink)}
+html[data-theme=dark] body:not([data-page=meeting]) .btn.line{color:var(--ink);border-color:var(--ink)}
+@media(max-width:720px){.lobby{grid-template-columns:1fr}}
