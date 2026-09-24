@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NeilUsha · Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="login">
+<header class="nav">
+  <a class="brand" href="index.html"><span class="logo">N</span>NeilUsha</a>
+  <div class="navr"><select data-lang-select aria-label="Language"></select></div>
+</header>
+<main class="center">
+  <div class="box">
+    <form class="card" id="loginForm">
+      <h2 data-i18n="login"></h2>
+      <label><span data-i18n="name"></span><input id="lname2" maxlength="24" required></label>
+      <label><span data-i18n="email"></span><input id="lemail" type="email"></label>
+      <button class="btn" data-i18n="cont"></button>
+      <button type="button" class="linkbtn" id="guest" data-i18n="guest"></button>
+      <p class="note" data-i18n="fbnote"></p>
+    </form>
+  </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
