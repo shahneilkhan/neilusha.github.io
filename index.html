@@ -16,18 +16,21 @@ input,select{width:100%;padding:11px 12px;border:1.5px solid var(--soft);border-
 input:focus,select:focus,button:focus-visible{outline:3px solid var(--blue);outline-offset:1px}
 button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 16px;background:var(--blue);color:#fff;font-weight:500}
 button.ghost{background:var(--soft);color:var(--ink)}
-button.off{background:var(--red)}
+button.off{background:var(--red);color:#fff}
 #lobby{max-width:440px;margin:0 auto;padding:8vh 20px}
 #lobby p{margin:0 0 8px}
 #lobby .card{background:var(--card);padding:22px;border-radius:16px;margin-top:18px}
 #lobby .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 #go{width:100%;margin-top:20px;padding:13px;font-size:1.05rem}
 #call{display:none;height:100%;flex-direction:column}
-#stage{flex:1;position:relative;background:#0a1830;min-height:0}
-#remote{width:100%;height:100%;object-fit:contain;background:#0a1830}
-#me{position:absolute;right:14px;top:14px;width:26%;max-width:240px;min-width:110px;border-radius:12px;border:2px solid #fff;transform:scaleX(-1);background:#000}
-#status{position:absolute;left:14px;top:14px;background:#ffffffd9;padding:6px 12px;border-radius:20px;font-size:.9rem}
-#cap{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(760px,92%);text-align:center;pointer-events:none}
+#stage{flex:1;position:relative;background:#0a1830;min-height:0;overflow:auto}
+#grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;padding:8px;align-content:center;min-height:100%}
+.tile{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3}
+.tile video,.tile canvas{width:100%;height:100%;object-fit:cover;display:block}
+#me{transform:scaleX(-1)}
+.tag{position:absolute;left:8px;bottom:8px;background:#000000b3;color:#fff;padding:3px 10px;border-radius:8px;font-size:.85rem}
+#status{position:fixed;left:14px;top:14px;background:#ffffffd9;padding:6px 12px;border-radius:20px;font-size:.9rem;z-index:2}
+#cap{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);width:min(760px,92%);text-align:center;pointer-events:none;z-index:2}
 #cap div{display:inline-block;background:#000000b3;color:#fff;padding:6px 12px;border-radius:10px;margin:2px;font-size:1.05rem}
 #cap .mine{background:#1f5fd6b3;font-size:.9rem}
 #bar{background:var(--card);padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
@@ -42,11 +45,11 @@ button.off{background:var(--red)}
 
 <section id="lobby">
   <h1>neilusha</h1>
-  <p>Nijer bhashay kotha bolun, onnojon shunbe tar bhashay.</p>
+  <p>Nijer bhashay kotha bolun, prottekey shunbe tar nijer bhashay.</p>
   <div class="card">
     <label for="name">Apnar naam</label>
     <input id="name" placeholder="Naam">
-    <label for="room">Room code (dujon-i ek code dile call hobe)</label>
+    <label for="room">Room code (sobai same code dile ek call-e ashben)</label>
     <input id="room" placeholder="jemon: rasel123">
     <div class="row">
       <div><label for="speak">Ami boli</label><select id="speak"></select></div>
@@ -58,11 +61,12 @@ button.off{background:var(--red)}
 
 <section id="call">
   <div id="stage">
-    <video id="remote" autoplay playsinline muted></video>
-    <canvas id="me" width="640" height="480"></canvas>
-    <div id="status">...</div>
-    <div id="cap"></div>
+    <div id="grid">
+      <div class="tile"><canvas id="me" width="640" height="480"></canvas><span class="tag">Ami</span></div>
+    </div>
   </div>
+  <div id="status">...</div>
+  <div id="cap"></div>
   <div id="bar">
     <button id="mic" class="ghost">Mic</button>
     <button id="camBtn" class="ghost">Camera</button>
@@ -78,6 +82,7 @@ button.off{background:var(--red)}
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js"></script>
 <script>
+const MAX=6; // max people in one room
 const LANGS=[['bn-BD','বাংলা'],['en-US','English'],['hi-IN','हिन्दी'],['ur-PK','اردو'],['ar-SA','العربية'],['es-ES','Español'],['fr-FR','Français'],['de-DE','Deutsch'],['pt-BR','Português'],['ru-RU','Русский'],['tr-TR','Türkçe'],['id-ID','Indonesia'],['ja-JP','日本語'],['ko-KR','한국어'],['zh-CN','中文']];
 const $=id=>document.getElementById(id);
 const base=l=>(l||'').split('-')[0];
@@ -88,8 +93,9 @@ const code=l=>l.startsWith('zh')?'zh-CN':base(l);
 });
 $('speak').value='bn-BD'; $('listen').value='en-US';
 
-let S={name:'',room:'',speak:'bn-BD',listen:'en-US',bg:'none',bgImg:null,camOff:false,micOn:true,running:false,peerLang:null,peerName:'Friend'};
-let media,outStream,seg,peer,conn,rec;
+let S={name:'',room:'',speak:'bn-BD',listen:'en-US',bg:'none',bgImg:null,camOff:false,micOn:true,running:false};
+let media,outStream,seg,peer,rec,slot=0;
+const P={}; // remote people: id -> {conn,name,lang,tile,video,tag}
 const cam=$('cam'), canvas=$('me'), ctx=canvas.getContext('2d');
 
 /* ---------- Background choices ---------- */
@@ -134,8 +140,10 @@ async function loop(){
   try{
     if(S.camOff){
       ctx.fillStyle='#10233f';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.save();ctx.scale(1,1);
       ctx.fillStyle='#fff';ctx.font='64px sans-serif';ctx.textAlign='center';
       ctx.fillText((S.name[0]||'?').toUpperCase(),canvas.width/2,canvas.height/2+22);
+      ctx.restore();
     } else if(S.bg==='none'){
       ctx.drawImage(cam,0,0,canvas.width,canvas.height);
     } else if(cam.readyState>=2){
@@ -162,50 +170,74 @@ $('go').onclick=async()=>{
   S.running=true; loop();
   outStream=canvas.captureStream(30);
   media.getAudioTracks().forEach(t=>outStream.addTrack(t));
-  startPeer(); startRec();
+  claimSlot(); startRec();
 };
 
-/* ---------- Connection ---------- */
+/* ---------- Group connection (no server needed) ----------
+   Every person takes a free seat: room-1, room-2 ... room-6.
+   A new person connects to every other seat; occupied seats answer. */
+const pid=n=>`neilusha-${S.room}-${n}`;
+function count(){return Object.keys(P).length+1;}
 function status(t){$('status').textContent=t;}
-function startPeer(){
-  const id='neilusha-'+S.room;
-  status('Connecting...');
-  peer=new Peer(id);
-  peer.on('open',()=>status('Room '+S.room+': kew join korar opekkha...'));
-  peer.on('call',c=>{c.answer(outStream);handleCall(c);});
-  peer.on('connection',handleConn);
-  peer.on('error',e=>{
-    if(e.type==='unavailable-id'){peer.destroy();joinGuest(id);}
-    else status('Error: '+e.type);
+function claimSlot(){
+  slot++;
+  if(slot>MAX){status('Room full (max '+MAX+' jon)');return;}
+  const p=new Peer(pid(slot));
+  p.on('open',()=>{
+    peer=p; status('Room '+S.room+' - '+count()+' jon');
+    for(let i=1;i<=MAX;i++) if(i!==slot) connectTo(pid(i));
+  });
+  p.on('call',c=>{c.answer(outStream);attachCall(c);});
+  p.on('connection',attachConn);
+  p.on('error',e=>{
+    if(e.type==='unavailable-id'){p.destroy();claimSlot();}
+    else if(e.type!=='peer-unavailable') status('Error: '+e.type);
   });
 }
-function joinGuest(id){
-  peer=new Peer();
-  peer.on('open',()=>{
-    handleCall(peer.call(id,outStream));
-    handleConn(peer.connect(id));
-  });
-  peer.on('error',e=>status('Error: '+e.type));
+function connectTo(id){
+  attachCall(peer.call(id,outStream));
+  attachConn(peer.connect(id));
 }
-function handleCall(c){
-  c.on('stream',s=>{$('remote').srcObject=s;$('remote').play().catch(()=>{});status('Connected');updateAudio();});
-  c.on('close',()=>status('Onnojon chole gelen'));
+function person(id){
+  if(P[id]) return P[id];
+  const t=document.createElement('div'); t.className='tile';
+  const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.muted=true;
+  const tag=document.createElement('span'); tag.className='tag'; tag.textContent='...';
+  t.append(v,tag); $('grid').appendChild(t);
+  P[id]={conn:null,name:'Friend',lang:null,tile:t,video:v,tag};
+  status('Room '+S.room+' - '+count()+' jon');
+  return P[id];
 }
-function handleConn(d){
-  conn=d;
-  const hello=()=>send({type:'hello',name:S.name,lang:S.speak});
+function drop(id){
+  if(!P[id]) return;
+  P[id].tile.remove(); delete P[id];
+  status('Room '+S.room+' - '+count()+' jon');
+}
+function attachCall(c){
+  const id=c.peer;
+  c.on('stream',s=>{const p=person(id);p.video.srcObject=s;p.video.play().catch(()=>{});updateAudio(id);});
+  c.on('close',()=>drop(id));
+  c.on('error',()=>{});
+}
+function attachConn(d){
+  const id=d.peer;
+  const hello=()=>{person(id).conn=d;d.send({type:'hello',name:S.name,lang:S.speak});};
   d.open?hello():d.on('open',hello);
-  d.on('data',onData);
+  d.on('data',m=>onData(id,m));
+  d.on('close',()=>drop(id));
+  d.on('error',()=>{});
 }
-function send(m){if(conn&&conn.open)conn.send(m);}
-function updateAudio(){
+function broadcast(m){Object.values(P).forEach(p=>{if(p.conn&&p.conn.open)p.conn.send(m);});}
+function updateAudio(id){
+  const p=P[id]; if(!p) return;
   // same language: play original voice; different: mute, we speak the translation
-  $('remote').muted=!(S.peerLang&&base(S.peerLang)===base(S.listen));
+  p.video.muted=!(p.lang&&base(p.lang)===base(S.listen));
 }
 
 /* ---------- Speech -> translate -> voice ---------- */
-async function onData(m){
-  if(m.type==='hello'){S.peerLang=m.lang;S.peerName=m.name;updateAudio();return;}
+async function onData(id,m){
+  const p=person(id);
+  if(m.type==='hello'){p.name=m.name;p.lang=m.lang;p.tag.textContent=m.name;updateAudio(id);return;}
   if(m.type!=='speech') return;
   let text=m.text;
   if(base(m.lang)!==base(S.listen)){
@@ -217,7 +249,7 @@ async function onData(m){
     const ut=new SpeechSynthesisUtterance(text);
     ut.lang=S.listen; speechSynthesis.speak(ut);
   }
-  caption(S.peerName+': '+text,false);
+  caption(p.name+': '+text,false);
 }
 function caption(t,mine){
   const d=document.createElement('div');
@@ -236,7 +268,7 @@ function startRec(){
       const text=e.results[i][0].transcript.trim();
       if(!text) continue;
       caption('Ami: '+text,true);
-      send({type:'speech',text,lang:S.speak});
+      broadcast({type:'speech',text,lang:S.speak});
     }
   };
   rec.onend=()=>{if(S.running&&S.micOn)setTimeout(()=>{try{rec.lang=S.speak;rec.start()}catch(e){}},300);};
@@ -259,10 +291,10 @@ $('camBtn').onclick=()=>{
 };
 $('speak2').onchange=e=>{
   S.speak=e.target.value;
-  send({type:'hello',name:S.name,lang:S.speak});
+  broadcast({type:'hello',name:S.name,lang:S.speak});
   try{rec.stop()}catch(e){} // restarts with new language
 };
-$('listen2').onchange=e=>{S.listen=e.target.value;updateAudio();};
+$('listen2').onchange=e=>{S.listen=e.target.value;Object.keys(P).forEach(updateAudio);};
 $('leave').onclick=()=>{
   S.running=false;
   try{rec.stop()}catch(e){}
