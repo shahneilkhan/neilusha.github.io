@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NeilUsha · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="dashboard">
+<header class="nav">
+  <a class="brand" href="index.html"><span class="logo">N</span>NeilUsha</a>
+  <div class="navr">
+    <select data-lang-select aria-label="Language"></select>
+    <button class="btn line" data-open-settings>⚙️ <span data-i18n="settings"></span></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="cards">
+    <section class="card">
+      <h2>➕ <span data-i18n="create"></span></h2>
+      <input id="mtitle" data-ph="title" autocomplete="off">
+      <button class="btn" id="create" data-i18n="create"></button>
+    </section>
+    <section class="card">
+      <h2>🔗 <span data-i18n="join"></span></h2>
+      <form id="joinForm">
+        <input id="jcode" data-ph="code" placeholder="abc-defg-hij" autocomplete="off">
+        <button class="btn" data-i18n="go"></button>
+      </form>
+    </section>
+  </div>
+  <section class="card" style="margin-top:18px">
+    <h2>🎥 <span data-i18n="recent"></span></h2>
+    <ul class="recent" id="recent"></ul>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
