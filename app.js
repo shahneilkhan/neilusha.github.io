@@ -127,38 +127,134 @@ const LINES={
   ar:[{o:'أعتقد أننا يجب أن نبدأ الآن.',en:'I think we should start now.',bn:'আমার মনে হয় এখনই শুরু করা উচিত।',hi:'मुझे लगता है हमें अभी शुरू करना चाहिए।',es:'Creo que deberíamos empezar ahora.',ja:'今すぐ始めるべきだと思います。'},{o:'هل يمكنكم سماعي جيدًا؟',en:'Can you hear me well?',bn:'আপনারা কি ভালোভাবে শুনতে পাচ্ছেন?',hi:'क्या आप मुझे ठीक से सुन पा रहे हैं?',es:'¿Me escuchan bien?',ja:'よく聞こえますか？'}]
 };
 function sceneFor(id){const keys=Object.keys(SCENES);let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return SCENES[keys[h%keys.length]];}
+const SPEECH_LOCALE={en:'en-US',bn:'bn-BD',hi:'hi-IN',es:'es-ES',ar:'ar-SA',ja:'ja-JP'};
+/* canvas versions of the SCENES gradients, used to paint the real local video */
+function paintScene(ctx,key,w,h){
+  if(key==='beach'){const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#8fd3f4');g.addColorStop(.7,'#e8d9a8');g.addColorStop(1,'#f1c27d');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);return;}
+  const stops={none:['#14503c','#0b3b2c'],forest:['#2d6a4f','#95d5b2'],office:['#dfe7e2','#b8c5bd'],night:['#0f2027','#2c5364'],sunset:['#ff8a5b','#7a3e9d']}[key]||['#14503c','#0b3b2c'];
+  const g=ctx.createLinearGradient(0,0,w,h); g.addColorStop(0,stops[0]); g.addColorStop(1,stops[1]);
+  ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+}
 
 function meeting(){
  requireUser(user=>{
   const room=new URLSearchParams(location.search).get('room')||'demo-room-000';
+  const roomSafe=room.replace(/[^a-z0-9-]/gi,'').toLowerCase()||'room';
   $('#roomCode').textContent=room;
   const live=window.NU_FB_READY && window.nuDb;
   const uid=user?user.uid:localUid();
-  let mic=store.get('mic',true),cam=store.get('cam',true),myHand=false,sharing=false,scene='none',blur=false,customBg=null,unread=0,panelTab=null,spk=0;
+  let mic=store.get('mic',true),cam=store.get('cam',true),myHand=false,sharing=false,scene='none',blur=false,customImg=null,unread=0,panelTab=null,spk=0;
   let people=[{id:uid,name:S.name,native:S.native,me:true}];
   let presence=null, unsubP=null, unsubM=null;
 
-  const myBg=()=>blur?BLURBASE:customBg?`center/cover url(${customBg})`:SCENES[scene];
+  /* ---------- real local camera + background compositing (canvas) ---------- */
+  const camRaw=$('#camRaw'), meCanvas=document.createElement('canvas');
+  meCanvas.width=640; meCanvas.height=480; meCanvas.className='bg';
+  let localMedia=null, outStream=null, seg=null, segRunning=false, camReady=false;
+  function paintBlurOrBg(image){
+    const ctx=meCanvas.getContext('2d'), w=meCanvas.width, h=meCanvas.height;
+    if(blur){ctx.filter='blur(14px)';ctx.drawImage(image,0,0,w,h);ctx.filter='none';return;}
+    if(customImg){ctx.drawImage(customImg,0,0,w,h);return;}
+    paintScene(ctx,scene,w,h);
+  }
+  function onSeg(r){
+    const ctx=meCanvas.getContext('2d'), w=meCanvas.width, h=meCanvas.height;
+    ctx.save(); ctx.clearRect(0,0,w,h);
+    ctx.drawImage(r.segmentationMask,0,0,w,h);
+    ctx.globalCompositeOperation='source-in'; ctx.drawImage(r.image,0,0,w,h);
+    ctx.globalCompositeOperation='destination-over'; paintBlurOrBg(r.image);
+    ctx.restore();
+  }
+  async function camLoop(){
+    if(!camReady) return;
+    const ctx=meCanvas.getContext('2d');
+    try{
+      if(!cam){
+        ctx.fillStyle='#10233f'; ctx.fillRect(0,0,meCanvas.width,meCanvas.height);
+      } else if(scene==='none' && !blur && !customImg){
+        ctx.drawImage(camRaw,0,0,meCanvas.width,meCanvas.height);
+      } else if(camRaw.readyState>=2 && seg){
+        await seg.send({image:camRaw});
+      }
+    }catch(e){}
+    requestAnimationFrame(camLoop);
+  }
+  async function startCamera(){
+    try{
+      localMedia=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480},audio:{echoCancellation:true,noiseSuppression:true}});
+    }catch(e){toast('📷 '+t('camdenied'),true);cam=false;render();return;}
+    camRaw.srcObject=localMedia; await camRaw.play();
+    seg=new SelfieSegmentation({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${f}`});
+    seg.setOptions({modelSelection:1}); seg.onResults(onSeg);
+    camReady=true; camLoop();
+    outStream=meCanvas.captureStream(30);
+    localMedia.getAudioTracks().forEach(tr=>{tr.enabled=mic;outStream.addTrack(tr);});
+    localMedia.getVideoTracks().forEach(tr=>tr.enabled=cam);
+    ensureTile(uid,true);
+    if(live) startPeer();
+    if(live && mic) startSpeech();
+  }
+
+  /* ---------- tiles: created once, updated in place so video/canvas keep playing ---------- */
+  const tiles={}; // id -> {div,slot,avatar,hand,tag,lchip}
+  function ensureTile(id,isMe){
+    if(tiles[id]) return tiles[id];
+    const div=document.createElement('div'); div.className='tile'+(isMe?' me':''); div.dataset.id=id;
+    const slot=document.createElement('div'); slot.className='bg';
+    const avatar=document.createElement('div'); avatar.className='avatar';
+    const hand=document.createElement('span'); hand.className='hand'; hand.textContent='✋'; hand.hidden=true;
+    const tag=document.createElement('span'); tag.className='tag';
+    const lchip=document.createElement('span'); lchip.className='lchip';
+    div.append(slot,avatar,hand,tag,lchip);
+    $('#grid').appendChild(div);
+    tiles[id]={div,slot,avatar,hand,tag,lchip};
+    if(isMe) tiles[id].slot.replaceWith(meCanvas), tiles[id].slot=meCanvas;
+    return tiles[id];
+  }
+  function dropTile(id){ if(tiles[id]){tiles[id].div.remove();delete tiles[id];} }
+  const remoteStreams={}, remoteVideos={};
+
   function render(){
     people[0].name=S.name; people[0].native=S.native; people[0].hand=myHand;
-    $('#grid').innerHTML=people.map(p=>{
-      const isMe=p.me, on=isMe?cam:(p.cam!==undefined?p.cam:true), m=isMe?mic:(p.mic!==undefined?p.mic:true);
-      return `<div class="tile ${on?'':'camoff'}" data-id="${p.id}">
-        <div class="bg ${isMe&&blur?'blur':''}" style="background:${isMe?myBg():(p.bg||sceneFor(p.id))}"></div>
-        <div class="avatar">${on?p.name[0].toUpperCase():'📷'}</div>${p.hand?'<span class="hand">✋</span>':''}
-        <span class="tag">${m?'🎤':'🔇'} ${isMe?p.name+' ('+t('hear').split(' ')[0]+')':p.name}</span>
-        <span class="lchip">🗣️ ${LANGS[p.native]}${isMe?'':' → '+LANGS[S.lang]}</span></div>`;
-    }).join('');
-    $('#tab-people').innerHTML=people.map(p=>`<div>${p.me?'⭐ ':''}${p.name} · ${LANGS[p.native]} ${p.me?(mic?'🎤':'🔇'):'🎤'}</div>`).join('');
+    Object.keys(tiles).forEach(id=>{ if(!people.some(p=>p.id===id)) dropTile(id); });
+    people.forEach(p=>{
+      const isMe=p.me, tl=ensureTile(p.id,isMe);
+      const on=isMe?cam:(p.cam!==undefined?p.cam:true), m=isMe?mic:(p.mic!==undefined?p.mic:true);
+      const hasVideo=isMe?(cam&&camReady):(!!remoteVideos[p.id]&&p.cam!==false);
+      tl.div.classList.toggle('camoff',!on);
+      tl.avatar.style.display=hasVideo?'none':'';
+      tl.avatar.textContent=on?p.name[0].toUpperCase():'📷';
+      tl.hand.hidden=!p.hand;
+      tl.tag.textContent=(m?'🎤':'🔇')+' '+(isMe?p.name+' ('+t('hear').split(' ')[0]+')':p.name);
+      tl.lchip.textContent='🗣️ '+LANGS[p.native]+(isMe?'':' → '+LANGS[S.lang]);
+      if(!isMe){
+        tl.slot.className='bg';
+        if(!hasVideo) tl.slot.style.background=p.bg||sceneFor(p.id);
+        if(remoteVideos[p.id]) remoteVideos[p.id].muted=!(p.native===S.lang);
+      } else {
+        meCanvas.classList.toggle('blur',blur);
+      }
+    });
+    $('#tab-people').innerHTML=people.map(p=>`<div>${p.me?'⭐ ':''}${p.name} · ${LANGS[p.native]} ${p.me?(mic?'🎤':'🔇'):((p.mic===false)?'🔇':'🎤')}</div>`).join('');
     $('#mic').classList.toggle('off',!mic); $('#mic').textContent=mic?'🎤':'🔇';
     $('#cam').classList.toggle('off',!cam);
     $('#ccBtn').classList.toggle('on',S.caps);
     if(!S.caps) $('#caption').hidden=true;
   }
 
-  /* controls */
-  $('#mic').onclick=()=>{mic=!mic;if(live)nuSetPresenceField(room,uid,{mic});render();};
-  $('#cam').onclick=()=>{cam=!cam;if(live)nuSetPresenceField(room,uid,{cam});render();};
+  /* ---------- controls ---------- */
+  $('#mic').onclick=()=>{
+    mic=!mic;
+    if(localMedia) localMedia.getAudioTracks().forEach(tr=>tr.enabled=mic);
+    if(live){nuSetPresenceField(room,uid,{mic}); mic?startSpeech():stopSpeech();}
+    render();
+  };
+  $('#cam').onclick=()=>{
+    cam=!cam;
+    if(localMedia) localMedia.getVideoTracks().forEach(tr=>tr.enabled=cam);
+    if(live)nuSetPresenceField(room,uid,{cam});
+    render();
+  };
   function fly(e){const d=document.createElement('div');d.className='fly';d.textContent=e;d.style.left=(15+Math.random()*70)+'%';$('#fly').appendChild(d);setTimeout(()=>d.remove(),2300);}
   $('#handBtn').onclick=()=>{myHand=!myHand;if(live)nuSetPresenceField(room,uid,{hand:myHand});$('#handBtn').classList.toggle('on',myHand);render();};
   $('#reactBtn').onclick=()=>{$('#reacts').hidden=!$('#reacts').hidden;};
@@ -173,12 +269,16 @@ function meeting(){
   $('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);}catch{} toast('🔗 '+t('copied'),true);};
   $('#leave').onclick=()=>{
     if(!confirm(t('leaveq'))) return;
+    stopSpeech();
     if(presence) presence.stop();
     if(unsubP) unsubP(); if(unsubM) unsubM();
+    if(peerObj) try{peerObj.destroy();}catch(e){}
+    if(localMedia) localMedia.getTracks().forEach(x=>x.stop());
+    speechSynthesis.cancel();
     location.href='dashboard.html';
   };
 
-  /* side panel: chat / people / backgrounds */
+  /* ---------- side panel: chat / people / backgrounds ---------- */
   function openPanel(tab){
     if(panelTab===tab){panelTab=null;$('#panel').hidden=true;return;}
     panelTab=tab; $('#panel').hidden=false;
@@ -189,22 +289,33 @@ function meeting(){
   $$('[data-open]').forEach(b=>b.onclick=()=>openPanel(b.dataset.open));
   $$('[data-tab]').forEach(b=>b.onclick=()=>{panelTab=null;openPanel(b.dataset.tab);});
 
-  /* backgrounds */
+  /* ---------- backgrounds (now really composited onto the local video) ---------- */
   function buildScenes(){
-    $('#scenes').innerHTML=Object.keys(SCENES).map(k=>`<button data-s="${k}" class="${!blur&&!customBg&&scene===k?'on':''}" style="background:${SCENES[k]}">${k}</button>`).join('')
+    $('#scenes').innerHTML=Object.keys(SCENES).map(k=>`<button data-s="${k}" class="${!blur&&!customImg&&scene===k?'on':''}" style="background:${SCENES[k]}">${k}</button>`).join('')
       +`<button data-s="blur" class="${blur?'on':''}" style="background:${BLURBASE};filter:blur(.5px)">${t('blur')}</button>`;
     $$('#scenes button').forEach(b=>b.onclick=()=>{
-      const k=b.dataset.s; customBg=null;
+      const k=b.dataset.s; customImg=null;
       blur=k==='blur'; if(!blur)scene=k;
       buildScenes(); render(); toast('🎨 '+t('bgset'));
     });
   }
   $('#bgFile').onchange=e=>{
     const f=e.target.files[0]; if(!f) return;
-    customBg=URL.createObjectURL(f); blur=false; buildScenes(); render(); toast('🎨 '+t('bgset'));
+    const img=new Image();
+    img.onload=()=>{customImg=img; blur=false; buildScenes(); render(); toast('🎨 '+t('bgset'));};
+    img.src=URL.createObjectURL(f);
   };
 
-  /* chat */
+  /* ---------- captions ---------- */
+  function showCaption(name,orig,shown){
+    if(!S.caps) return;
+    const c=$('#caption'); c.hidden=false;
+    c.innerHTML='<small></small><div class="o"></div><div class="tr"></div>';
+    c.children[0].textContent=name; c.children[1].textContent=orig||''; c.children[2].textContent=shown;
+    clearTimeout(showCaption._t); showCaption._t=setTimeout(()=>{c.hidden=true;},3600);
+  }
+
+  /* ---------- chat ---------- */
   function addMsg(from,text,note,me){
     const d=document.createElement('div'); d.className='msg'+(me?' me':'');
     d.innerHTML='<b></b><p></p><small></small>';
@@ -228,13 +339,89 @@ function meeting(){
     }
   };
 
+  /* ---------- real speech: recognize my speech, translate + speak others' ---------- */
+  let speechRec=null, speechActive=false;
+  function startSpeech(){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR||speechActive) return;
+    speechRec=new SR(); speechRec.lang=SPEECH_LOCALE[S.native]||'en-US';
+    speechRec.continuous=true; speechRec.interimResults=false;
+    speechRec.onresult=e=>{
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(!e.results[i].isFinal) continue;
+        const text=e.results[i][0].transcript.trim(); if(!text) continue;
+        showCaption(S.name+' ('+t('hear').split(' ')[0]+')','',text);
+        nuSetPresenceField(room,uid,{lastSpeech:{text,native:S.native,at:Date.now()}});
+      }
+    };
+    speechRec.onend=()=>{if(speechActive)setTimeout(()=>{try{speechRec.lang=SPEECH_LOCALE[S.native]||'en-US';speechRec.start();}catch(e){}},300);};
+    speechRec.onerror=()=>{};
+    try{speechRec.start();speechActive=true;}catch(e){}
+  }
+  function stopSpeech(){speechActive=false;try{speechRec&&speechRec.stop();}catch(e){}}
+  const seenSpeech={};
+  async function handleIncomingSpeech(p){
+    const sp=p.lastSpeech; if(!sp||!sp.text) return;
+    const key=sp.at&&sp.at.toMillis?sp.at.toMillis():sp.at;
+    if(seenSpeech[p.id]===key) return; seenSpeech[p.id]=key;
+    let shown=sp.text, orig='';
+    if(sp.native!==S.lang){
+      try{
+        const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(sp.text)}&langpair=${sp.native}|${S.lang}`);
+        const j=await res.json();
+        shown=(j.responseData&&j.responseData.translatedText)||sp.text; orig=sp.text;
+      }catch(e){}
+      const ut=new SpeechSynthesisUtterance(shown); ut.lang=SPEECH_LOCALE[S.lang]||'en-US'; speechSynthesis.speak(ut);
+    }
+    showCaption(p.name,orig,shown);
+    if(tiles[p.id]){tiles[p.id].div.classList.add('speaking');setTimeout(()=>{if(tiles[p.id])tiles[p.id].div.classList.remove('speaking');},3000);}
+  }
+
+  /* ---------- WebRTC mesh via PeerJS (room membership comes from Firestore) ---------- */
+  let peerObj=null; const connected=new Set(), peerIdMap={};
+  function peerIdFor(otherUid){return ('nu-'+roomSafe+'-'+otherUid).replace(/[^a-zA-Z0-9-]/g,'');}
+  function startPeer(){
+    peerObj=new Peer(peerIdFor(uid));
+    peerObj.on('open',tryConnectAll);
+    peerObj.on('call',call=>{
+      call.answer(outStream);
+      wireCall(call, peerIdMap[call.peer]);
+    });
+    peerObj.on('error',e=>{if(e.type!=='peer-unavailable')console.warn('NeilUsha peer:',e.type);});
+  }
+  function tryConnectAll(){
+    if(!peerObj||!peerObj.open||!outStream) return;
+    people.filter(p=>!p.me).forEach(p=>{
+      peerIdMap[peerIdFor(p.id)]=p.id;
+      if(connected.has(p.id)||uid>=p.id) return; // deterministic initiator: smaller uid calls
+      const call=peerObj.call(peerIdFor(p.id),outStream);
+      if(call) wireCall(call,p.id);
+    });
+  }
+  function wireCall(call,pid){
+    if(!pid) return;
+    connected.add(pid);
+    call.on('stream',stream=>{
+      remoteStreams[pid]=stream;
+      let v=remoteVideos[pid];
+      if(!v){v=document.createElement('video');v.autoplay=true;v.playsInline=true;remoteVideos[pid]=v;}
+      v.srcObject=stream;
+      const tl=tiles[pid]; if(tl){v.className='bg';tl.slot.replaceWith(v);tl.slot=v;}
+      render();
+    });
+    call.on('close',()=>{connected.delete(pid);delete remoteVideos[pid];render();});
+    call.on('error',()=>{connected.delete(pid);});
+  }
+
   if(live){
-    /* real people, real chat, via Firestore */
+    /* real people, real chat, real video/audio + speech via Firestore + WebRTC */
     presence=nuJoinRoom(room,uid,{name:S.name,native:S.native,hand:false,mic,cam});
     unsubP=nuWatchParticipants(room,list=>{
       const wasCount=people.length;
       people=[people[0],...list.filter(p=>p.id!==uid).map(p=>({id:p.id,name:p.name||'Guest',native:p.native||'en',hand:!!p.hand,mic:p.mic,cam:p.cam,me:false}))];
       if(people.length>wasCount) toast('👋 '+(people[people.length-1].name)+' '+t('joined'));
+      list.forEach(handleIncomingSpeech);
+      tryConnectAll();
       render();
     });
     unsubM=nuWatchMessages(room,added=>{added.forEach(m=>{if(m.uid!==uid) addMsg(m.name,m.text,'');});});
@@ -245,15 +432,8 @@ function meeting(){
     setInterval(()=>{
       const p=people.filter(x=>!x.me); if(!p.length) return;
       const who=p[spk++%p.length], line=LINES[who.native][Math.random()*2|0], r=tr(line,who);
-      const tile=$(`[data-id="${who.id}"]`); if(tile){tile.classList.add('speaking');setTimeout(()=>tile.classList.remove('speaking'),3000);}
-      if(S.caps){
-        const c=$('#caption'); c.hidden=false;
-        c.innerHTML=`<small></small><div class="o"></div><div class="tr"></div>`;
-        c.children[0].textContent=who.name+' · 🗣️ '+LANGS[who.native];
-        c.children[1].textContent=r.note?line.o:'';
-        c.children[2].textContent=(r.note?'🌍 ':'')+r.text;
-        setTimeout(()=>{c.hidden=true;},3600);
-      }
+      if(tiles[who.id]){tiles[who.id].div.classList.add('speaking');setTimeout(()=>{if(tiles[who.id])tiles[who.id].div.classList.remove('speaking');},3000);}
+      showCaption(who.name,r.note?line.o:'',(r.note?'🌍 ':'')+r.text);
     },5000);
     setInterval(()=>{
       const p=people.filter(x=>!x.me); if(!p.length) return;
@@ -270,6 +450,7 @@ function meeting(){
   document.addEventListener('nu:change',render);
   buildScenes(); render();
   addMsg('NeilUsha','👋 '+room,'');
+  startCamera();
  });
 }
 
