@@ -457,29 +457,33 @@ function meeting(){
 /* ---------- Login ---------- */
 function login(){
   $('#lname2').value=store.get('user',{}).name||S.name||'';
+  const langOpts=Object.entries(LANGS).map(([c,n])=>`<option value="${c}">${n}</option>`).join('');
+  $('#lnative').innerHTML=langOpts; $('#llisten').innerHTML=langOpts;
+  $('#lnative').value=S.native; $('#llisten').value=S.lang;
+  const grabLang=()=>{S.native=$('#lnative').value; S.lang=$('#llisten').value;};
   if(window.NU_FB_READY && window.nuAuth){
     if($('#fbnote'))$('#fbnote').hidden=true;
     window.nuOnAuth(u=>{if(u) location.href='dashboard.html';});
-    const goAuth=(p)=>p.then(cred=>{S.name=cred.user.displayName||S.name;save();location.href='dashboard.html';})
+    const goAuth=(p)=>p.then(cred=>{S.name=cred.user.displayName||S.name;grabLang();save();location.href='dashboard.html';})
       .catch(err=>toast('⚠️ '+err.message,true));
-    if($('#google')) $('#google').onclick=()=>goAuth(window.nuSignInGoogle());
+    if($('#google')) $('#google').onclick=()=>{grabLang();goAuth(window.nuSignInGoogle());};
     $('#loginForm').onsubmit=e=>{
       e.preventDefault();
       const n=$('#lname2').value.trim(); if(!n) return;
-      S.name=n; save(); goAuth(window.nuSignInGuest(n));
+      S.name=n; grabLang(); save(); goAuth(window.nuSignInGuest(n));
     };
     $('#guest').onclick=()=>{
       const n=$('#lname2').value.trim()||S.name||'Guest';
-      S.name=n; save(); goAuth(window.nuSignInGuest(n));
+      S.name=n; grabLang(); save(); goAuth(window.nuSignInGuest(n));
     };
   } else {
     $('#loginForm').onsubmit=e=>{
       e.preventDefault();
       const n=$('#lname2').value.trim(); if(!n) return;
-      S.name=n; save(); store.set('user',{name:n,email:$('#lemail').value.trim()});
+      S.name=n; grabLang(); save(); store.set('user',{name:n,email:$('#lemail').value.trim()});
       location.href='dashboard.html';
     };
-    $('#guest').onclick=()=>{location.href='dashboard.html';};
+    $('#guest').onclick=()=>{grabLang();save();location.href='dashboard.html';};
   }
 }
 
