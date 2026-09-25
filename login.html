@@ -19,11 +19,17 @@
       <label><span data-i18n="name"></span><input id="lname2" maxlength="24" required></label>
       <label><span data-i18n="email"></span><input id="lemail" type="email"></label>
       <button class="btn" data-i18n="cont"></button>
+      <button type="button" class="linkbtn" id="google">🔵 Google</button>
       <button type="button" class="linkbtn" id="guest" data-i18n="guest"></button>
-      <p class="note" data-i18n="fbnote"></p>
+      <p class="note" id="fbnote" data-i18n="fbnote"></p>
     </form>
   </div>
 </main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
