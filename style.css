@@ -140,3 +140,9 @@ html[data-theme=dark] body:not([data-page=meeting]){--paper:#0e1a15;--ink:#e6f2e
 html[data-theme=dark] body:not([data-page=meeting]) :is(.card,input,select,dialog){background:#13261e;color:var(--ink)}
 html[data-theme=dark] body:not([data-page=meeting]) .btn.line{color:var(--ink);border-color:var(--ink)}
 @media(max-width:720px){.lobby{grid-template-columns:1fr}}
+
+/* RTL (Arabic) */
+html[dir=rtl] .nav,html[dir=rtl] .hero,html[dir=rtl] .row{direction:rtl}
+html[dir=rtl] .tag{left:auto;right:8px}
+html[dir=rtl] .lchip{right:auto;left:8px}
+html[dir=rtl] .msg.me{justify-self:start}
