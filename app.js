@@ -150,7 +150,7 @@ function meeting(){
   /* ---------- real local camera + background compositing (canvas) ---------- */
   const camRaw=$('#camRaw'), meCanvas=document.createElement('canvas');
   meCanvas.width=640; meCanvas.height=480; meCanvas.className='bg';
-  let localMedia=null, outStream=null, seg=null, segRunning=false, camReady=false;
+  let localMedia=null, outStream=null, seg=null, segRunning=false, camReady=false, camTrack=null, screenStream=null;
   function paintBlurOrBg(image){
     const ctx=meCanvas.getContext('2d'), w=meCanvas.width, h=meCanvas.height;
     if(blur){ctx.filter='blur(14px)';ctx.drawImage(image,0,0,w,h);ctx.filter='none';return;}
@@ -188,6 +188,7 @@ function meeting(){
     seg.setOptions({modelSelection:1}); seg.onResults(onSeg);
     camReady=true; camLoop();
     outStream=meCanvas.captureStream(30);
+    camTrack=outStream.getVideoTracks()[0];
     localMedia.getAudioTracks().forEach(tr=>{tr.enabled=mic;outStream.addTrack(tr);});
     localMedia.getVideoTracks().forEach(tr=>tr.enabled=cam);
     ensureTile(uid,true);
@@ -260,12 +261,43 @@ function meeting(){
   $('#reactBtn').onclick=()=>{$('#reacts').hidden=!$('#reacts').hidden;};
   $$('#reacts button').forEach(b=>b.onclick=()=>{fly(b.textContent);$('#reacts').hidden=true;});
   $('#ccBtn').onclick=()=>{S.caps=!S.caps;changed();};
-  $('#shareBtn').onclick=()=>{
-    sharing=!sharing;
-    $('#share').hidden=!sharing; $('#stage').classList.toggle('sharing',sharing);
-    $('#shareBtn').classList.toggle('on',sharing);
-    toast('🖥️ '+t(sharing?'sharing':'stopped'));
+  $('#shareBtn').onclick=async()=>{
+    if(!sharing){
+      let stream;
+      try{stream=await navigator.mediaDevices.getDisplayMedia({video:true});}
+      catch(e){return;}
+      screenStream=stream;
+      const track=stream.getVideoTracks()[0];
+      track.onended=()=>stopShare();
+      if(outStream){outStream.getVideoTracks().forEach(tk=>outStream.removeTrack(tk));outStream.addTrack(track);}
+      Object.values(calls).forEach(call=>{
+        const pc=call.peerConnection; if(!pc) return;
+        const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video');
+        if(sender) sender.replaceTrack(track);
+      });
+      $('#share').innerHTML=''; const v=document.createElement('video');
+      v.autoplay=true;v.playsInline=true;v.muted=true;v.srcObject=stream;
+      v.style.cssText='width:100%;height:100%;object-fit:contain';
+      $('#share').appendChild(v);
+      sharing=true;
+      $('#share').hidden=false; $('#stage').classList.add('sharing');
+      $('#shareBtn').classList.add('on');
+      toast('🖥️ '+t('sharing'));
+    } else stopShare();
   };
+  function stopShare(){
+    if(screenStream){screenStream.getTracks().forEach(tk=>tk.stop());screenStream=null;}
+    if(outStream&&camTrack){outStream.getVideoTracks().forEach(tk=>{if(tk!==camTrack)outStream.removeTrack(tk);});if(!outStream.getVideoTracks().includes(camTrack))outStream.addTrack(camTrack);}
+    Object.values(calls).forEach(call=>{
+      const pc=call.peerConnection; if(!pc||!camTrack) return;
+      const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video');
+      if(sender) sender.replaceTrack(camTrack);
+    });
+    sharing=false;
+    $('#share').hidden=true; $('#stage').classList.remove('sharing');
+    $('#shareBtn').classList.remove('on');
+    toast('🖥️ '+t('stopped'));
+  }
   $('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);}catch{} toast('🔗 '+t('copied'),true);};
   $('#leave').onclick=()=>{
     if(!confirm(t('leaveq'))) return;
@@ -273,6 +305,7 @@ function meeting(){
     if(presence) presence.stop();
     if(unsubP) unsubP(); if(unsubM) unsubM();
     if(peerObj) try{peerObj.destroy();}catch(e){}
+    if(screenStream) screenStream.getTracks().forEach(x=>x.stop());
     if(localMedia) localMedia.getTracks().forEach(x=>x.stop());
     speechSynthesis.cancel();
     location.href='dashboard.html';
@@ -378,7 +411,7 @@ function meeting(){
   }
 
   /* ---------- WebRTC mesh via PeerJS (room membership comes from Firestore) ---------- */
-  let peerObj=null; const connected=new Set(), peerIdMap={};
+  let peerObj=null; const connected=new Set(), peerIdMap={}, calls={};
   function peerIdFor(otherUid){return ('nu-'+roomSafe+'-'+otherUid).replace(/[^a-zA-Z0-9-]/g,'');}
   function startPeer(){
     peerObj=new Peer(peerIdFor(uid));
@@ -400,7 +433,7 @@ function meeting(){
   }
   function wireCall(call,pid){
     if(!pid) return;
-    connected.add(pid);
+    connected.add(pid); calls[pid]=call;
     call.on('stream',stream=>{
       remoteStreams[pid]=stream;
       let v=remoteVideos[pid];
@@ -409,7 +442,7 @@ function meeting(){
       const tl=tiles[pid]; if(tl){v.className='bg';tl.slot.replaceWith(v);tl.slot=v;}
       render();
     });
-    call.on('close',()=>{connected.delete(pid);delete remoteVideos[pid];render();});
+    call.on('close',()=>{connected.delete(pid);delete remoteVideos[pid];delete calls[pid];render();});
     call.on('error',()=>{connected.delete(pid);});
   }
 
