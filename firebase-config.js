@@ -20,6 +20,18 @@
             match /participants/{uid} {
               allow read: if request.auth != null;
               allow write: if request.auth != null && request.auth.uid == uid;
+              allow delete: if request.auth != null && (
+                request.auth.uid == uid ||
+                get(/databases/$(database)/documents/rooms/$(roomId)).data.createdBy == request.auth.uid
+              );
+            }
+            match /waiting/{uid} {
+              allow read: if request.auth != null;
+              allow create: if request.auth != null && request.auth.uid == uid;
+              allow update, delete: if request.auth != null && (
+                request.auth.uid == uid ||
+                get(/databases/$(database)/documents/rooms/$(roomId)).data.createdBy == request.auth.uid
+              );
             }
             match /messages/{msgId} {
               allow read: if request.auth != null;

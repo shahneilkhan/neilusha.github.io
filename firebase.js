@@ -32,6 +32,33 @@
     const d = await db.collection('rooms').doc(code).get();
     return d.exists;
   };
+  window.nuGetRoom = async (code)=>{
+    const d = await db.collection('rooms').doc(code).get();
+    return d.exists ? d.data() : null;
+  };
+
+  /* Waiting room: guests wait here until the host admits them */
+  window.nuRequestJoin = (roomId,uid,data)=>{
+    return db.collection('rooms').doc(roomId).collection('waiting').doc(uid)
+      .set({...data, admitted:false, at: firebase.firestore.FieldValue.serverTimestamp()});
+  };
+  window.nuWatchOwnWaiting = (roomId,uid,cb)=>{
+    return db.collection('rooms').doc(roomId).collection('waiting').doc(uid)
+      .onSnapshot(d=>cb(d.exists, d.exists?d.data():null));
+  };
+  window.nuWatchWaitingList = (roomId,cb)=>{
+    return db.collection('rooms').doc(roomId).collection('waiting')
+      .onSnapshot(snap=>cb(snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>!p.admitted)));
+  };
+  window.nuAdmit = (roomId,uid)=>db.collection('rooms').doc(roomId).collection('waiting').doc(uid).set({admitted:true},{merge:true});
+  window.nuDeny  = (roomId,uid)=>db.collection('rooms').doc(roomId).collection('waiting').doc(uid).delete();
+  window.nuCancelWaiting = (roomId,uid)=>db.collection('rooms').doc(roomId).collection('waiting').doc(uid).delete().catch(()=>{});
+
+  /* Watch a single participant's own presence doc — used to detect a host kick */
+  window.nuWatchSelf = (roomId,uid,cb)=>{
+    return db.collection('rooms').doc(roomId).collection('participants').doc(uid).onSnapshot(d=>cb(d.exists));
+  };
+  window.nuKick = (roomId,uid)=>db.collection('rooms').doc(roomId).collection('participants').doc(uid).delete();
 
   /* Presence: one doc per participant, refreshed every 20s, removed on leave */
   window.nuJoinRoom = (roomId,uid,data)=>{

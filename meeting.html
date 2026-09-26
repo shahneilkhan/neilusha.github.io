@@ -27,6 +27,15 @@
   <div class="caption" id="caption" hidden></div>
   <div class="flyzone" id="fly"></div>
 
+  <div class="waitwrap" id="waitWrap" hidden>
+    <div class="waitbox">
+      <div class="spin"></div>
+      <h2 data-i18n="waiting"></h2>
+      <p data-i18n="waitingSub"></p>
+      <button class="btn line" id="cancelWait" data-i18n="cancel"></button>
+    </div>
+  </div>
+
   <aside class="panel" id="panel" hidden>
     <nav class="tabs">
       <button data-tab="chat" data-i18n="chat"></button>
@@ -37,7 +46,10 @@
       <div id="msgs"></div>
       <form id="chatForm"><input id="chatIn" data-ph="msg" autocomplete="off"><button class="btn" data-i18n="send"></button></form>
     </div>
-    <div class="pbody plist" id="tab-people" data-body="people" hidden></div>
+    <div class="pbody" data-body="people" hidden>
+      <div id="waitReqs"></div>
+      <div class="plist" id="tab-people"></div>
+    </div>
     <div class="pbody" data-body="scenes" hidden>
       <div class="scenes" id="scenes"></div>
       <label class="up"><span data-i18n="upload"></span><input type="file" id="bgFile" accept="image/*" hidden></label>
