@@ -138,12 +138,6 @@ const SCENES={
   sunset:'linear-gradient(#ff8a5b,#7a3e9d)'
 };
 const BLURBASE='repeating-linear-gradient(90deg,#c9d6cf 0 24px,#9fb2a7 24px 48px)';
-const LINES={
-  bn:[{o:'সবাইকে শুভ সকাল, শুরু করা যাক।',en:"Good morning everyone, let's begin.",hi:'सभी को सुप्रभात, शुरू करते हैं।',es:'Buenos días a todos, comencemos.',ar:'صباح الخير للجميع، لنبدأ.',ja:'皆さんおはようございます、始めましょう。'},{o:'আমি স্ক্রিনটা শেয়ার করছি।',en:"I'm sharing my screen.",hi:'मैं स्क्रीन शेयर कर रही हूँ।',es:'Estoy compartiendo mi pantalla.',ar:'أنا أشارك شاشتي.',ja:'画面を共有しています。'}],
-  ja:[{o:'資料をご確認ください。',en:'Please check the document.',bn:'নথিটি দেখে নিন।',hi:'कृपया दस्तावेज़ देखें।',es:'Por favor revisen el documento.',ar:'يرجى مراجعة المستند.'},{o:'質問はありますか？',en:'Any questions?',bn:'কোনো প্রশ্ন আছে?',hi:'कोई सवाल है?',es:'¿Alguna pregunta?',ar:'هل لديكم أسئلة؟'}],
-  es:[{o:'Me parece una gran idea.',en:"I think it's a great idea.",bn:'আমার কাছে এটা দারুণ আইডিয়া মনে হচ্ছে।',hi:'मुझे यह बहुत अच्छा विचार लगता है।',ar:'أعتقد أنها فكرة رائعة.',ja:'とても良い考えだと思います。'},{o:'Podemos verlo mañana.',en:'We can look at it tomorrow.',bn:'আমরা এটা আগামীকাল দেখতে পারি।',hi:'हम इसे कल देख सकते हैं।',ar:'يمكننا مراجعتها غدًا.',ja:'明日それを見ましょう。'}],
-  ar:[{o:'أعتقد أننا يجب أن نبدأ الآن.',en:'I think we should start now.',bn:'আমার মনে হয় এখনই শুরু করা উচিত।',hi:'मुझे लगता है हमें अभी शुरू करना चाहिए।',es:'Creo que deberíamos empezar ahora.',ja:'今すぐ始めるべきだと思います。'},{o:'هل يمكنكم سماعي جيدًا؟',en:'Can you hear me well?',bn:'আপনারা কি ভালোভাবে শুনতে পাচ্ছেন?',hi:'क्या आप मुझे ठीक से सुन पा रहे हैं?',es:'¿Me escuchan bien?',ja:'よく聞こえますか？'}]
-};
 function sceneFor(id){const keys=Object.keys(SCENES);let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return SCENES[keys[h%keys.length]];}
 const SPEECH_LOCALE={en:'en-US',bn:'bn-BD',hi:'hi-IN',es:'es-ES',ar:'ar-SA',ja:'ja-JP'};
 /* pick the best-sounding voice available in this browser for a language */
@@ -394,20 +388,11 @@ function meeting(){
     $('#msgs').appendChild(d); $('#msgs').scrollTop=1e6;
     if(!me&&panelTab!=='chat'){unread++;$('#badge').textContent=unread;$('#badge').hidden=false;toast('✉️ '+from);}
   }
-  const tr=(line,p)=>p.native===S.lang?{text:line.o,note:''}:{text:line[S.lang]||line.en,note:'🌍 '+LANGS[p.native]+' → '+LANGS[S.lang]+(line[S.lang]?'':' (EN)')};
   $('#chatForm').onsubmit=e=>{
     e.preventDefault();
     const v=$('#chatIn').value.trim(); if(!v) return;
     addMsg(S.name,v,'',true); $('#chatIn').value='';
-    if(live){
-      nuSendMessage(room,uid,S.name,v).catch(err=>toast('⚠️ '+err.message,true));
-    } else {
-      setTimeout(()=>{
-        const p=people.filter(x=>!x.me); if(!p.length) return;
-        const who=p[Math.random()*p.length|0], line=LINES[who.native][Math.random()*2|0], r=tr(line,who);
-        addMsg(who.name,r.text,r.note);
-      },1600);
-    }
+    if(live) nuSendMessage(room,uid,S.name,v).catch(err=>toast('⚠️ '+err.message,true));
   };
 
   /* ---------- real speech: recognize my speech, translate + speak others' ---------- */
@@ -497,21 +482,7 @@ function meeting(){
     });
     unsubM=nuWatchMessages(room,added=>{added.forEach(m=>{if(m.uid!==uid) addMsg(m.name,m.text,'');});});
   } else {
-    /* demo mode: no backend configured yet -> simulated participants */
-    const others=[{id:'a',name:'Ayesha',native:'bn',bg:SCENES.forest},{id:'k',name:'Kenji',native:'ja',bg:SCENES.night},{id:'s',name:'Sofia',native:'es',bg:SCENES.sunset}];
-    others.forEach((p,i)=>setTimeout(()=>{people.push(p);render();toast('👋 '+p.name+' '+t('joined'));},1200*(i+1)));
-    setInterval(()=>{
-      const p=people.filter(x=>!x.me); if(!p.length) return;
-      const who=p[spk++%p.length], line=LINES[who.native][Math.random()*2|0], r=tr(line,who);
-      if(tiles[who.id]){tiles[who.id].div.classList.add('speaking');setTimeout(()=>{if(tiles[who.id])tiles[who.id].div.classList.remove('speaking');},3000);}
-      showCaption(who.name,r.note?line.o:'',(r.note?'🌍 ':'')+r.text);
-    },5000);
-    setInterval(()=>{
-      const p=people.filter(x=>!x.me); if(!p.length) return;
-      const w=p[Math.random()*p.length|0];
-      if(Math.random()<.5){w.hand=!w.hand;render();if(w.hand)toast('✋ '+w.name+' '+t('hand'));}
-      else fly(['👍','👏','😄','🎉'][Math.random()*4|0]);
-    },9000);
+    toast('⚠️ Firebase config bosano nei — firebase-config.js check korun',true);
   }
 
   /* timer */
